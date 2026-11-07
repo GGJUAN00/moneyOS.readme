@@ -33,7 +33,38 @@ export function formatDigits(value: number): string {
   return value > 0 ? thousands.format(value) : ''
 }
 
-// ---- Dates (always local time, as YYYY-MM-DD strings) ----
+// ---- Colombia time ----
+// The app always works in Colombian time (America/Bogota, UTC−5, no daylight saving),
+// whatever time zone the phone is set to.
+
+export const COLOMBIA_TZ = 'America/Bogota'
+const COLOMBIA_OFFSET_MIN = -5 * 60
+
+/**
+ * "Now" as a Date whose local getters (getHours, getDate, …) read Colombian time.
+ * Only for calendar logic and display — use Date.now()/toISOString() for real timestamps.
+ */
+export function colombiaNow(at: number = Date.now()): Date {
+  const deviceOffsetMin = -new Date(at).getTimezoneOffset()
+  return new Date(at + (COLOMBIA_OFFSET_MIN - deviceOffsetMin) * 60_000)
+}
+
+/** "sábado, 7 de noviembre de 2026" (Colombian time) */
+export function colombiaLongDate(at: number = Date.now()): string {
+  return new Date(at).toLocaleDateString('es-CO', { timeZone: COLOMBIA_TZ, weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })
+}
+
+/** "3:42:15 p. m." (Colombian time) */
+export function colombiaTime(at: number = Date.now(), seconds = true): string {
+  return new Date(at).toLocaleTimeString('es-CO', { timeZone: COLOMBIA_TZ, hour: 'numeric', minute: '2-digit', ...(seconds ? { second: '2-digit' } : {}), hour12: true })
+}
+
+/** Real timestamp (ISO) → "7 de noviembre de 2026" in Colombian time */
+export function colombiaDateOf(isoTimestamp: string): string {
+  return new Date(isoTimestamp).toLocaleDateString('es-CO', { timeZone: COLOMBIA_TZ, day: 'numeric', month: 'long', year: 'numeric' })
+}
+
+// ---- Dates (Colombian calendar days, as YYYY-MM-DD strings) ----
 
 export function toISODate(d: Date): string {
   const y = d.getFullYear()
@@ -43,7 +74,7 @@ export function toISODate(d: Date): string {
 }
 
 export function todayISO(): string {
-  return toISODate(new Date())
+  return toISODate(colombiaNow())
 }
 
 export function parseISODate(iso: string): Date {
@@ -58,7 +89,7 @@ export function capitalize(s: string): string {
 }
 
 /** "Noviembre 2026" */
-export function monthTitle(d = new Date()): string {
+export function monthTitle(d = colombiaNow()): string {
   return `${capitalize(monthNames[d.getMonth()])} ${d.getFullYear()}`
 }
 
@@ -71,7 +102,7 @@ export function monthShortName(monthIndex: number): string {
 }
 
 /** "Hoy", "Ayer" or "mié, 23 sept" */
-export function relativeDay(iso: string, today = new Date()): string {
+export function relativeDay(iso: string, today = colombiaNow()): string {
   const date = parseISODate(iso)
   const t = parseISODate(toISODate(today))
   const diff = Math.round((t.getTime() - date.getTime()) / 86_400_000)

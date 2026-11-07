@@ -85,7 +85,7 @@ export default function Transactions({ transactions, onAdd, onEdit }: Props) {
       )}
 
       {/* Transaction Groups */}
-      <div className="pb-6">
+      <div className="pb-6 stagger">
         {groups.map(([date, txs]) => {
           const dayTotal = txs.reduce((s, t) => s + signed(t), 0)
           return (

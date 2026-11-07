@@ -1,21 +1,27 @@
 import { useState } from 'react'
+import { colombiaDateOf } from '../lib/format'
 import { documentTypes, formatPhone, initialsOf, type UserProfile } from '../lib/user'
 
 interface Props {
   user: UserProfile
   soundOn: boolean
   onToggleSound: (on: boolean) => void
+  lockOn: boolean
+  lockHasFaceId: boolean
+  onEnableLock: () => void
+  onDisableLock: () => void
   onClose: () => void
   onDelete: () => void
 }
 
 function formatDate(iso: string): string {
-  const date = new Date(iso.length === 10 ? iso + 'T00:00:00' : iso)
-  return date.toLocaleDateString('es-CO', { day: 'numeric', month: 'long', year: 'numeric' })
+  if (iso.length !== 10) return colombiaDateOf(iso) // a real timestamp
+  return new Date(iso + 'T00:00:00').toLocaleDateString('es-CO', { day: 'numeric', month: 'long', year: 'numeric' })
 }
 
-export default function ProfileSheet({ user, soundOn, onToggleSound, onClose, onDelete }: Props) {
+export default function ProfileSheet({ user, soundOn, onToggleSound, lockOn, lockHasFaceId, onEnableLock, onDisableLock, onClose, onDelete }: Props) {
   const [confirming, setConfirming] = useState(false)
+  const [confirmUnlock, setConfirmUnlock] = useState(false)
   const docLabel = documentTypes.find(d => d.value === user.documentType)?.label ?? user.documentType
 
   const rows: [string, string][] = [
@@ -30,9 +36,9 @@ export default function ProfileSheet({ user, soundOn, onToggleSound, onClose, on
 
   return (
     <div className="absolute inset-0 z-20 flex flex-col justify-end" role="dialog" aria-modal="true" aria-label="Mi perfil">
-      <button aria-label="Cerrar" className="absolute inset-0" style={{ background: 'rgba(0,0,0,0.7)' }} onClick={onClose} />
+      <button aria-label="Cerrar" className="absolute inset-0 backdrop-in" style={{ background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(3px)', WebkitBackdropFilter: 'blur(3px)' }} onClick={onClose} />
       <div
-        className="relative rounded-t-3xl px-5 pt-3 fade-up max-h-[90%] overflow-y-auto scrollbar-hide"
+        className="relative rounded-t-3xl px-5 pt-3 sheet-in max-h-[90%] overflow-y-auto scrollbar-hide"
         style={{
           background: '#0C0C0D',
           borderTop: '1px solid rgba(255,255,255,0.08)',
@@ -65,6 +71,31 @@ export default function ProfileSheet({ user, soundOn, onToggleSound, onClose, on
               <p className="text-sm text-right truncate" style={{ color: '#F4F4F5' }}>{value}</p>
             </div>
           ))}
+        </div>
+
+        <div className="rounded-2xl mb-3 overflow-hidden" style={{ background: '#111112', border: '1px solid rgba(255,255,255,0.06)' }}>
+          <button
+            role="switch"
+            aria-checked={lockOn}
+            onClick={() => (lockOn ? setConfirmUnlock(true) : onEnableLock())}
+            className="w-full flex items-center justify-between px-4 py-3"
+          >
+            <span className="text-left">
+              <span className="block text-sm" style={{ color: '#F4F4F5' }}>Bloqueo con Face ID</span>
+              <span className="block text-[11px]" style={{ color: '#8C8C93' }}>
+                {lockOn ? (lockHasFaceId ? 'Face ID y PIN cada vez que entras' : 'PIN cada vez que entras') : 'Desactivado'}
+              </span>
+            </span>
+            <span className="relative flex-shrink-0 rounded-full transition-colors duration-200" style={{ width: 46, height: 28, background: lockOn ? '#F4F4F5' : '#3C3C41' }}>
+              <span className="absolute top-[3px] rounded-full transition-all duration-200" style={{ width: 22, height: 22, left: lockOn ? 21 : 3, background: lockOn ? '#050505' : '#8C8C93' }} />
+            </span>
+          </button>
+          {confirmUnlock && (
+            <div className="flex gap-2 px-4 pb-3">
+              <button onClick={() => setConfirmUnlock(false)} className="flex-1 rounded-xl py-2.5 text-xs" style={{ background: '#1A1A1C', color: '#F4F4F5' }}>Mantener</button>
+              <button onClick={() => { setConfirmUnlock(false); onDisableLock() }} className="flex-1 rounded-xl py-2.5 text-xs font-semibold" style={{ background: '#E0706B', color: '#050505' }}>Desactivar</button>
+            </div>
+          )}
         </div>
 
         <button

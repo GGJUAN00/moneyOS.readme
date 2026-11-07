@@ -13,8 +13,16 @@ import {
   type Transaction,
   type TxType,
 } from '../lib/finance'
-import { formatCOP, formatCOPShort, formatPct, relativeDay, toISODate } from '../lib/format'
+import { colombiaNow, formatCOP, formatCOPShort, formatPct, relativeDay, toISODate } from '../lib/format'
 import { displayName, greeting, initialsOf, type UserProfile } from '../lib/user'
+import ColombiaClock from './ColombiaClock'
+import { useAnimatedNumber } from '../hooks/useAnimatedNumber'
+
+/** Amount that counts smoothly to its new value. */
+function Counter({ value, short = false }: { value: number; short?: boolean }) {
+  const v = useAnimatedNumber(value, 750)
+  return <>{short ? formatCOPShort(v) : formatCOP(v)}</>
+}
 
 interface Props {
   user: UserProfile
@@ -47,14 +55,14 @@ export function ActionButtons({ onAdd }: { onAdd: (type: TxType) => void }) {
     <div className="grid grid-cols-2 gap-3">
       <button
         onClick={() => onAdd('ingreso')}
-        className="flex items-center justify-center gap-2 rounded-2xl py-3.5 text-sm font-semibold transition-opacity active:opacity-80"
+        className="flex items-center justify-center gap-2 rounded-2xl py-3.5 text-sm font-semibold btn-press"
         style={{ background: '#F4F4F5', color: '#050505' }}
       >
         <span className="text-lg leading-none">＋</span> Agregar dinero
       </button>
       <button
         onClick={() => onAdd('gasto')}
-        className="flex items-center justify-center gap-2 rounded-2xl py-3.5 text-sm font-semibold transition-opacity active:opacity-80"
+        className="flex items-center justify-center gap-2 rounded-2xl py-3.5 text-sm font-semibold btn-press"
         style={{ background: '#111112', color: '#F4F4F5', border: '1px solid rgba(255,255,255,0.14)' }}
       >
         <span className="text-lg leading-none">−</span> Transacción
@@ -66,7 +74,7 @@ export function ActionButtons({ onAdd }: { onAdd: (type: TxType) => void }) {
 export default function Dashboard({ user, transactions, settings, onNavigate, onOpenProfile, onAdd, onEdit, onEditBudget }: Props) {
   const [activeCat, setActiveCat] = useState<number | null>(null)
 
-  const now = new Date()
+  const now = colombiaNow()
   const balance = balanceOf(transactions)
   const month = inMonth(transactions, now)
   const income = incomeOf(month)
@@ -86,9 +94,14 @@ export default function Dashboard({ user, transactions, settings, onNavigate, on
   const empty = transactions.length === 0
 
   return (
-    <div className="h-full overflow-y-auto scrollbar-hide" style={{ background: '#050505' }}>
+    <div className="h-full overflow-y-auto scrollbar-hide stagger" style={{ background: '#050505' }}>
+      {/* Colombian date & time */}
+      <div className="px-6 pt-3">
+        <ColombiaClock />
+      </div>
+
       {/* Header */}
-      <div className="px-6 pt-4 pb-2 flex items-center justify-between">
+      <div className="px-6 pt-2 pb-2 flex items-center justify-between">
         <div>
           <p className="text-xs font-medium" style={{ color: '#8C8C93' }}>{greeting()}</p>
           <p className="text-lg font-semibold" style={{ color: '#F4F4F5' }}>{displayName(user)}</p>
@@ -109,7 +122,7 @@ export default function Dashboard({ user, transactions, settings, onNavigate, on
           SALDO DISPONIBLE
         </p>
         <p className="text-[34px] leading-tight font-light mb-4 font-mono-data" style={{ color: balance < 0 ? '#E0706B' : '#FFFFFF' }}>
-          {balance < 0 ? '-' : ''}{formatCOP(balance)}
+          {balance < 0 ? '-' : ''}<Counter value={balance} />
         </p>
         <div className="flex items-center gap-2">
           {change !== null ? (
@@ -161,7 +174,7 @@ export default function Dashboard({ user, transactions, settings, onNavigate, on
           <div key={label} className="rounded-2xl p-3" style={card}>
             <p className="text-xs mb-1" style={{ color: '#8C8C93' }}>{label}</p>
             <p className="text-sm font-semibold font-mono-data" style={{ color: !value ? '#8C8C93' : color }}>
-              {value === null ? '—' : `${value === 0 ? '' : prefix}${formatCOPShort(value)}`}
+              {value === null ? '—' : <>{value === 0 ? '' : prefix}<Counter value={value} short /></>}
             </p>
             <p className="text-[10px] mt-0.5" style={{ color: '#5E5E65' }}>{note}</p>
           </div>
@@ -183,7 +196,7 @@ export default function Dashboard({ user, transactions, settings, onNavigate, on
         </div>
         <div className="relative h-2 rounded-full overflow-hidden" style={{ background: '#262629' }}>
           <div
-            className="absolute left-0 top-0 h-full rounded-full transition-all duration-700"
+            className="absolute left-0 top-0 h-full rounded-full transition-all duration-700 bar-grow"
             style={{
               width: `${Math.min(100, budgetPct)}%`,
               background: budgetPct > 90

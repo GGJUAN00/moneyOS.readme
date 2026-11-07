@@ -113,7 +113,7 @@ export default function EntrySheet({ type: initialType, existing, isFirst, balan
               key={c.name}
               onClick={() => setCategory(c.name)}
               aria-pressed={active}
-              className="flex items-center gap-2 rounded-xl px-3 py-2.5 text-left transition-all duration-150"
+              className="flex items-center gap-2 rounded-xl px-3 py-2.5 text-left transition-all duration-150 btn-press"
               style={{
                 background: active ? `${c.color}1F` : '#111112',
                 border: `1px solid ${active ? c.color : categoryError ? 'rgba(224,112,107,0.4)' : 'rgba(255,255,255,0.06)'}`,
@@ -159,7 +159,7 @@ export default function EntrySheet({ type: initialType, existing, isFirst, balan
 
       <button
         onClick={save}
-        className="w-full rounded-2xl py-4 text-base font-semibold transition-opacity active:opacity-80"
+        className="w-full rounded-2xl py-4 text-base font-semibold btn-press"
         style={{ background: accent, color: '#050505' }}
       >
         {existing ? 'Guardar cambios' : isIncome ? 'Agregar dinero' : 'Guardar transacción'}

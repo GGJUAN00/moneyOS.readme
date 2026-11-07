@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from 'react'
 import { answer, suggestedQuestions, welcomeText } from '../lib/assistant'
+import { colombiaTime } from '../lib/format'
 import type { Settings, Transaction } from '../lib/finance'
 import { firstNameOf, type UserProfile } from '../lib/user'
 
@@ -11,7 +12,7 @@ interface Message {
 }
 
 function now(): string {
-  return new Date().toLocaleTimeString('es-CO', { hour: 'numeric', minute: '2-digit', hour12: true })
+  return colombiaTime(Date.now(), false)
 }
 
 function parseBold(text: string): React.ReactNode[] {

@@ -8,6 +8,7 @@ import {
   type ProfileErrors,
   type UserProfile,
 } from '../lib/user'
+import { todayISO } from '../lib/format'
 
 interface Props {
   onComplete: (user: UserProfile) => void
@@ -162,7 +163,7 @@ export default function Registration({ onComplete }: Props) {
 
   if (step === 'welcome') return <Welcome onStart={() => setStep('form')} />
 
-  const today = new Date().toISOString().slice(0, 10)
+  const today = todayISO()
   const errorCount = Object.keys(errors).length
 
   return (

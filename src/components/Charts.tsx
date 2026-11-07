@@ -14,7 +14,8 @@ import {
   weeklySpending,
   type Transaction,
 } from '../lib/finance'
-import { formatCOP, formatCOPShort, formatPct, monthTitle } from '../lib/format'
+import { capitalize, colombiaNow, formatCOP, formatCOPShort, formatPct, monthName, monthTitle, toISODate } from '../lib/format'
+import { monthsWithData, summarize } from '../lib/summary'
 
 type View = 'monthly' | 'weekly' | 'networth'
 
@@ -59,11 +60,11 @@ function Empty({ text }: { text: string }) {
 const axisTick = { fill: '#8C8C93', fontSize: 10, fontFamily: 'Manrope' }
 const labelTick = { fill: '#8C8C93', fontSize: 11, fontFamily: 'Manrope' }
 
-export default function Charts({ transactions }: { transactions: Transaction[] }) {
+export default function Charts({ transactions, onOpenSummary }: { transactions: Transaction[]; onOpenSummary: (key: string) => void }) {
   const [view, setView] = useState<View>('monthly')
   const [activeBar, setActiveBar] = useState<number | null>(null)
 
-  const now = new Date()
+  const now = colombiaNow()
   const months = monthlySpending(transactions, 6, now)
   const thisMonth = months[months.length - 1]
   const previous = months.slice(0, -1).filter(m => m.spent > 0)
@@ -82,6 +83,9 @@ export default function Charts({ transactions }: { transactions: Transaction[] }
   const balance = balanceOf(transactions)
   const firstWithMoney = trend.find(t => t.value !== 0)
   const trendChange = firstWithMoney ? balance - firstWithMoney.value : 0
+
+  const currentKey = toISODate(now).slice(0, 7)
+  const pastMonths = monthsWithData(transactions).filter(k => k < currentKey).slice(0, 12)
 
   const views: { key: View; label: string }[] = [
     { key: 'monthly', label: 'Mensual' },
@@ -170,7 +174,7 @@ export default function Charts({ transactions }: { transactions: Transaction[] }
                         </div>
                       </div>
                       <div className="relative h-1.5 rounded-full overflow-hidden" style={{ background: '#262629' }}>
-                        <div className="absolute left-0 top-0 h-full rounded-full" style={{ width: `${pct}%`, background: cat.color, transition: 'width 0.6s ease' }} />
+                        <div className="absolute left-0 top-0 h-full rounded-full bar-grow" style={{ width: `${pct}%`, background: cat.color }} />
                       </div>
                       <p className="text-[10px] mt-1" style={{ color: '#5E5E65' }}>
                         {cat.count} {cat.count === 1 ? 'movimiento' : 'movimientos'}
@@ -287,6 +291,36 @@ export default function Charts({ transactions }: { transactions: Transaction[] }
           </div>
         </div>
       )}
+      {/* Past monthly summaries */}
+      <div className="mx-4 mb-6 rounded-2xl overflow-hidden" style={card}>
+        <div className="px-4 pt-4 pb-2">
+          <p className="text-sm font-semibold" style={{ color: '#F4F4F5' }}>Resúmenes</p>
+          <p className="text-[11px] mt-0.5" style={{ color: '#5E5E65' }}>El detalle de cada mes que ya terminó</p>
+        </div>
+        {pastMonths.length === 0 ? (
+          <p className="text-xs px-4 pb-5 pt-2" style={{ color: '#8C8C93' }}>
+            Cuando termine {monthName(now.getMonth())} verás aquí su resumen.
+          </p>
+        ) : (
+          pastMonths.map((key, i) => {
+            const s = summarize(transactions, key)
+            return (
+              <button
+                key={key}
+                onClick={() => onOpenSummary(key)}
+                className="w-full flex items-center justify-between px-4 py-3 text-left active:bg-white/5"
+                style={{ borderTop: i > 0 ? '1px solid rgba(255,255,255,0.04)' : '1px solid rgba(255,255,255,0.04)' }}
+              >
+                <span className="text-sm" style={{ color: '#F4F4F5' }}>{capitalize(monthName(s.month))} {s.year}</span>
+                <span className="flex items-center gap-3">
+                  <span className="text-xs font-mono-data" style={{ color: '#8C8C93' }}>-{formatCOPShort(s.spent)}</span>
+                  <span style={{ color: '#5E5E65' }}>›</span>
+                </span>
+              </button>
+            )
+          })
+        )}
+      </div>
     </div>
   )
 }

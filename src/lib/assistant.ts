@@ -11,7 +11,7 @@ import {
   type Settings,
   type Transaction,
 } from './finance'
-import { formatCOP, formatPct, monthName } from './format'
+import { colombiaNow, formatCOP, formatPct, monthName } from './format'
 
 export const suggestedQuestions = [
   '¿Cuánta plata tengo?',
@@ -40,7 +40,7 @@ export function welcomeText(name: string, list: Transaction[], settings: Setting
   if (list.length === 0) {
     return `¡Hola, ${name}! Soy tu asistente de MoneyOS. Cuando agregues tu dinero y anotes tus gastos, podré decirte en qué se va tu plata y cómo vas con tu presupuesto.`
   }
-  const now = new Date()
+  const now = colombiaNow()
   const month = inMonth(list, now)
   const spent = spentOf(month)
   let text = `¡Hola, ${name}! Tu saldo es ${money(balanceOf(list))}. En ${monthName(now.getMonth())} llevas ${money(spent)} en gastos.`
@@ -55,7 +55,7 @@ export function welcomeText(name: string, list: Transaction[], settings: Setting
 
 export function answer(question: string, list: Transaction[], settings: Settings): string {
   const q = question.toLowerCase()
-  const now = new Date()
+  const now = colombiaNow()
   const mName = monthName(now.getMonth())
   const month = inMonth(list, now)
   const spent = spentOf(month)

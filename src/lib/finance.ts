@@ -1,6 +1,6 @@
 // The user's own money movements, entered by hand and kept only on this device.
 
-import { parseISODate, toISODate, monthShortName } from './format'
+import { colombiaNow, parseISODate, toISODate, monthShortName } from './format'
 
 export type TxType = 'ingreso' | 'gasto'
 
@@ -131,7 +131,7 @@ function monthKey(iso: string) {
   return iso.slice(0, 7)
 }
 
-export function inMonth(list: Transaction[], ref = new Date()): Transaction[] {
+export function inMonth(list: Transaction[], ref = colombiaNow()): Transaction[] {
   const key = toISODate(ref).slice(0, 7)
   return list.filter(t => monthKey(t.date) === key)
 }
@@ -163,7 +163,7 @@ export function spendingByCategory(list: Transaction[]): CategoryTotal[] {
   return [...map.values()].sort((a, b) => b.amount - a.amount)
 }
 
-export function daysLeftInMonth(ref = new Date()): number {
+export function daysLeftInMonth(ref = colombiaNow()): number {
   const last = new Date(ref.getFullYear(), ref.getMonth() + 1, 0).getDate()
   return last - ref.getDate()
 }
@@ -173,7 +173,7 @@ function lastDayOfMonth(year: number, month: number): string {
 }
 
 /** Spending per month for the last `n` months (oldest first), current month last. */
-export function monthlySpending(list: Transaction[], n = 6, ref = new Date()) {
+export function monthlySpending(list: Transaction[], n = 6, ref = colombiaNow()) {
   const out: { month: string; key: string; spent: number; income: number }[] = []
   for (let i = n - 1; i >= 0; i--) {
     const d = new Date(ref.getFullYear(), ref.getMonth() - i, 1)
@@ -185,7 +185,7 @@ export function monthlySpending(list: Transaction[], n = 6, ref = new Date()) {
 }
 
 /** Balance at the end of each of the last `n` months (current month = today). */
-export function balanceTrend(list: Transaction[], n = 6, ref = new Date()) {
+export function balanceTrend(list: Transaction[], n = 6, ref = colombiaNow()) {
   const out: { month: string; value: number }[] = []
   for (let i = n - 1; i >= 0; i--) {
     const d = new Date(ref.getFullYear(), ref.getMonth() - i, 1)
@@ -198,7 +198,7 @@ export function balanceTrend(list: Transaction[], n = 6, ref = new Date()) {
 const weekDays = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom']
 
 /** Spending for each day of the current week (Monday → Sunday). */
-export function weeklySpending(list: Transaction[], ref = new Date()) {
+export function weeklySpending(list: Transaction[], ref = colombiaNow()) {
   const dow = (ref.getDay() + 6) % 7 // 0 = Monday
   const monday = new Date(ref.getFullYear(), ref.getMonth(), ref.getDate() - dow)
   return weekDays.map((day, i) => {
@@ -209,7 +209,7 @@ export function weeklySpending(list: Transaction[], ref = new Date()) {
 }
 
 /** Spending of the previous week (for comparison). */
-export function previousWeekSpent(list: Transaction[], ref = new Date()) {
+export function previousWeekSpent(list: Transaction[], ref = colombiaNow()) {
   const dow = (ref.getDay() + 6) % 7
   const start = toISODate(new Date(ref.getFullYear(), ref.getMonth(), ref.getDate() - dow - 7))
   const end = toISODate(new Date(ref.getFullYear(), ref.getMonth(), ref.getDate() - dow - 1))

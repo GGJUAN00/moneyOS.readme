@@ -57,9 +57,32 @@ npm run dev      # servidor local
 npm run build    # compila a dist/
 ```
 
+## Seguridad: Face ID cada vez que entras
+
+Después del registro la app ofrece **proteger la app**: creas un PIN de 4 dígitos y activas
+Face ID. Desde ahí, cada vez que abres MoneyOS (o vuelves a ella después de salir) se pide
+Face ID; si falla, puedes usar el PIN (5 intentos y luego una espera de 30 segundos). Mientras
+la app está en segundo plano se tapa el contenido. Se activa o desactiva en el perfil.
+
+Face ID funciona con una *llave de acceso* (passkey) que iOS guarda en el llavero para
+`ggjuan00.github.io`. Es un bloqueo de pantalla para tu privacidad: los datos siguen guardados
+en el teléfono sin cifrar. El PIN se guarda solo como hash.
+
+## Hora de Colombia y resumen del mes
+
+- Inicio muestra la fecha y la hora de Colombia en vivo, y todos los cálculos (hoy, semana,
+  mes) usan la hora de Colombia aunque el teléfono esté en otra zona horaria.
+- Cuando termina un mes, la primera vez que entras aparece **Resumen del mes**; al tocarlo
+  ves todo el detalle: gastos, ingresos, ahorro, saldo al empezar y al terminar, categorías,
+  gastos más grandes, día de más gasto y comparación con el mes anterior. Los resúmenes
+  pasados quedan en **Gráficas → Resúmenes**.
+
 ## Diseño y sonido
 
 - Paleta negro y gris (grafito), con tarjeta de saldo estilo metal y tipografía Manrope.
+- Animaciones suaves: el saldo cuenta hasta su valor, las pestañas y listas aparecen con
+  transición, las hojas suben desde abajo y los botones responden al tocarlos. Se desactivan
+  si el iPhone tiene activado *Reducir movimiento*.
 - Sonidos suaves tipo campana al agregar dinero, registrar una transacción o borrar un
   movimiento, generados en el momento con la Web Audio API (sin archivos de audio).
   Se pueden apagar en el perfil (toca tus iniciales → **Sonidos**). En iPhone no suenan

@@ -10,9 +10,9 @@ interface Props {
 export default function Sheet({ label, onClose, children }: Props) {
   return (
     <div className="absolute inset-0 z-20 flex flex-col justify-end" role="dialog" aria-modal="true" aria-label={label}>
-      <button aria-label="Cerrar" className="absolute inset-0" style={{ background: 'rgba(0,0,0,0.7)' }} onClick={onClose} />
+      <button aria-label="Cerrar" className="absolute inset-0 backdrop-in" style={{ background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(3px)', WebkitBackdropFilter: 'blur(3px)' }} onClick={onClose} />
       <div
-        className="relative rounded-t-3xl px-5 pt-3 fade-up max-h-[92%] overflow-y-auto scrollbar-hide"
+        className="relative rounded-t-3xl px-5 pt-3 sheet-in max-h-[92%] overflow-y-auto scrollbar-hide"
         style={{
           background: '#0C0C0D',
           borderTop: '1px solid rgba(255,255,255,0.08)',

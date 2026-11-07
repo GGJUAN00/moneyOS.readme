@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import Dashboard from './components/Dashboard'
 import Charts from './components/Charts'
 import Transactions from './components/Transactions'
@@ -7,7 +7,13 @@ import Registration from './components/Registration'
 import ProfileSheet from './components/ProfileSheet'
 import EntrySheet from './components/EntrySheet'
 import BudgetSheet from './components/BudgetSheet'
-import { clearUser, loadUser, type UserProfile } from './lib/user'
+import ColombiaClock from './components/ColombiaClock'
+import LockScreen from './components/LockScreen'
+import LockSetup from './components/LockSetup'
+import MonthSummaryView, { MonthSummaryPrompt } from './components/MonthSummary'
+import { authInProgress, clearLock, loadLock, type LockConfig } from './lib/lock'
+import { markSummarySeen, pendingSummaryKey, summarize } from './lib/summary'
+import { clearUser, displayName, loadUser, type UserProfile } from './lib/user'
 import { playDelete, playExpense, playIncome, playTap, setSoundEnabled } from './lib/sound'
 import {
   balanceOf,
@@ -99,6 +105,68 @@ export default function App() {
   const [entry, setEntry] = useState<{ type: TxType; existing?: Transaction } | null>(null)
   const [budgetOpen, setBudgetOpen] = useState(false)
 
+  // ---- App lock (Face ID / PIN), asked every time the app is opened ----
+  const [lock, setLock] = useState<LockConfig | null>(() => loadLock())
+  const [locked, setLocked] = useState<boolean>(() => !!loadLock())
+  const [curtain, setCurtain] = useState(false) // hides content in the app switcher
+  const [setupOpen, setSetupOpen] = useState<boolean>(() => {
+    try {
+      return !loadLock() && !!loadUser() && localStorage.getItem('moneyos:lockPrompted') !== '1'
+    } catch {
+      return false
+    }
+  })
+  const hiddenAt = useRef<number | null>(null)
+
+  useEffect(() => {
+    function onVisibility() {
+      if (document.visibilityState === 'hidden') {
+        if (authInProgress()) return
+        hiddenAt.current = Date.now()
+        if (lock) setCurtain(true)
+      } else {
+        const away = hiddenAt.current ? Date.now() - hiddenAt.current : 0
+        hiddenAt.current = null
+        if (lock && !authInProgress() && away > 1500) setLocked(true)
+        setCurtain(false)
+      }
+    }
+    document.addEventListener('visibilitychange', onVisibility)
+    return () => document.removeEventListener('visibilitychange', onVisibility)
+  }, [lock])
+
+  function dismissSetup() {
+    try { localStorage.setItem('moneyos:lockPrompted', '1') } catch { /* ignore */ }
+    setSetupOpen(false)
+  }
+
+  function handleLockReady(config: LockConfig) {
+    setLock(config)
+    setLocked(false)
+    dismissSetup()
+  }
+
+  function handleDisableLock() {
+    clearLock()
+    setLock(null)
+  }
+
+  // ---- Monthly summary, offered once when a new month starts ----
+  const [summaryPrompt, setSummaryPrompt] = useState<string | null>(() => pendingSummaryKey(loadTransactions()))
+  const [summaryKey, setSummaryKey] = useState<string | null>(null)
+
+  function openSummary(key: string) {
+    markSummarySeen(key)
+    setSummaryPrompt(null)
+    playTap()
+    setSummaryKey(key)
+  }
+
+  function laterSummary() {
+    if (summaryPrompt) markSummarySeen(summaryPrompt)
+    setSummaryPrompt(null)
+  }
+
   function updateTransactions(next: Transaction[]) {
     setTransactions(next)
     saveTransactions(next)
@@ -141,7 +209,17 @@ export default function App() {
     setSoundEnabled(true)
     setProfileOpen(false)
     setTab('home')
+    clearLock()
+    setLock(null)
+    setLocked(false)
+    try { localStorage.removeItem('moneyos:lockPrompted'); localStorage.removeItem('moneyos:summarySeen') } catch { /* ignore */ }
+    setSummaryPrompt(null)
     setUser(null)
+  }
+
+  function handleRegistered(u: UserProfile) {
+    setUser(u)
+    setSetupOpen(true) // offer Face ID right after signing up
   }
 
   const openAdd = (type: TxType) => {
@@ -162,7 +240,7 @@ export default function App() {
       <div className="phone-shell relative flex flex-col overflow-hidden">
         {/* Mock status bar — only shown in the desktop mockup; a real phone shows its own */}
         <div className="mock-chrome flex items-center justify-between px-7 pt-3 pb-1 flex-shrink-0">
-          <span className="text-xs font-semibold font-mono-data" style={{ color: '#F4F4F5' }}>9:41</span>
+          <span className="text-xs font-semibold font-mono-data" style={{ color: '#F4F4F5' }}><ColombiaClock compact /></span>
           <div className="flex items-center gap-1.5">
             {/* Signal */}
             <div className="flex items-end gap-0.5">
@@ -194,13 +272,13 @@ export default function App() {
         {/* First launch on this device: registration instead of the app */}
         {!user && (
           <div className="flex-1 overflow-hidden" style={{ minHeight: 0, paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}>
-            <Registration onComplete={setUser} />
+            <Registration onComplete={handleRegistered} />
           </div>
         )}
 
         {/* Content area */}
         {user && (
-        <div className="flex-1 overflow-hidden" style={{ minHeight: 0 }}>
+        <div key={tab} className="flex-1 overflow-hidden tab-in" style={{ minHeight: 0, filter: curtain ? 'blur(24px)' : 'none' }}>
           {tab === 'home' && (
             <Dashboard
               user={user}
@@ -213,7 +291,7 @@ export default function App() {
               onEditBudget={() => setBudgetOpen(true)}
             />
           )}
-          {tab === 'charts' && <Charts transactions={transactions} />}
+          {tab === 'charts' && <Charts transactions={transactions} onOpenSummary={openSummary} />}
           {tab === 'transactions' && <Transactions transactions={transactions} onAdd={openAdd} onEdit={openEdit} />}
           {tab === 'ai' && <AIChat user={user} transactions={transactions} settings={settings} />}
         </div>
@@ -241,6 +319,10 @@ export default function App() {
             user={user}
             soundOn={settings.sound}
             onToggleSound={handleToggleSound}
+            lockOn={!!lock}
+            lockHasFaceId={!!lock?.credentialId}
+            onEnableLock={() => { setProfileOpen(false); setSetupOpen(true) }}
+            onDisableLock={handleDisableLock}
             onClose={() => setProfileOpen(false)}
             onDelete={handleDeleteUser}
           />
@@ -262,7 +344,7 @@ export default function App() {
               <button
                 key={key}
                 onClick={() => setTab(key)}
-                className="flex-1 flex flex-col items-center gap-1 py-3 transition-all duration-200"
+                className="flex-1 flex flex-col items-center gap-1 py-3 transition-all duration-300 btn-press"
                 style={{ color: active ? '#F4F4F5' : '#5E5E65' }}
               >
                 <div className="relative">
@@ -285,6 +367,24 @@ export default function App() {
           })}
         </div>
         )}
+
+        {user && summaryKey && (
+          <MonthSummaryView summary={summarize(transactions, summaryKey)} onClose={() => setSummaryKey(null)} />
+        )}
+
+        {user && !locked && !setupOpen && summaryPrompt && !summaryKey && (
+          <MonthSummaryPrompt summary={summarize(transactions, summaryPrompt)} onOpen={() => openSummary(summaryPrompt)} onLater={laterSummary} />
+        )}
+
+        {user && setupOpen && !locked && (
+          <LockSetup userName={user.email} displayName={displayName(user)} onDone={handleLockReady} onSkip={dismissSetup} />
+        )}
+
+        {user && lock && locked && (
+          <LockScreen config={lock} name={user.firstName.trim().split(/\s+/)[0]} onUnlock={() => setLocked(false)} />
+        )}
+
+        {curtain && <div className="absolute inset-0 z-[60]" style={{ background: '#050505' }} />}
       </div>
     </div>
   )

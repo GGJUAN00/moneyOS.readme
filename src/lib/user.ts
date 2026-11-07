@@ -1,3 +1,5 @@
+import { colombiaNow } from './format'
+
 // User profile captured on first launch and kept only on this device (localStorage).
 
 export const documentTypes = [
@@ -86,7 +88,7 @@ export function initialsOf(user: UserProfile): string {
   return `${a}${b}`.toUpperCase()
 }
 
-export function greeting(date = new Date()): string {
+export function greeting(date = colombiaNow()): string {
   const h = date.getHours()
   if (h < 12) return 'Buenos días,'
   if (h < 19) return 'Buenas tardes,'
@@ -99,7 +101,7 @@ export function formatPhone(phone: string): string {
   return `+57 ${d.slice(0, 3)} ${d.slice(3, 6)} ${d.slice(6)}`
 }
 
-export function ageFrom(birthDate: string, today = new Date()): number {
+export function ageFrom(birthDate: string, today = colombiaNow()): number {
   const b = new Date(birthDate + 'T00:00:00')
   let age = today.getFullYear() - b.getFullYear()
   const m = today.getMonth() - b.getMonth()
