@@ -10,12 +10,15 @@ import {
   formatCOP,
   formatCOPShort,
 } from '../data/mockData'
+import { displayName, greeting, initialsOf, type UserProfile } from '../lib/user'
 
 const budgetPct = Math.round((totalSpent / monthlyBudget) * 100)
 const saved = monthlyIncome - totalSpent
 
 interface Props {
+  user: UserProfile
   onNavigate: (tab: 'charts' | 'transactions' | 'ai') => void
+  onOpenProfile: () => void
 }
 
 function CustomTooltip({ active, payload }: { active?: boolean; payload?: { name: string; value: number }[] }) {
@@ -31,7 +34,7 @@ function CustomTooltip({ active, payload }: { active?: boolean; payload?: { name
   )
 }
 
-export default function Dashboard({ onNavigate }: Props) {
+export default function Dashboard({ user, onNavigate, onOpenProfile }: Props) {
   const [activeCat, setActiveCat] = useState<number | null>(null)
   const recentTx = transactions.slice(0, 4)
 
@@ -43,15 +46,17 @@ export default function Dashboard({ onNavigate }: Props) {
       {/* Header */}
       <div className="px-6 pt-4 pb-2 flex items-center justify-between">
         <div>
-          <p className="text-xs font-medium" style={{ color: '#5A6A8A' }}>Good morning,</p>
-          <p className="text-lg font-semibold" style={{ color: '#E8EDFF' }}>Juan Camilo</p>
+          <p className="text-xs font-medium" style={{ color: '#5A6A8A' }}>{greeting()}</p>
+          <p className="text-lg font-semibold" style={{ color: '#E8EDFF' }}>{displayName(user)}</p>
         </div>
-        <div
+        <button
+          onClick={onOpenProfile}
+          aria-label="Ver mi perfil"
           className="w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold"
           style={{ background: 'linear-gradient(135deg, #00E87A 0%, #00A855 100%)', color: '#06090F' }}
         >
-          JC
-        </div>
+          {initialsOf(user)}
+        </button>
       </div>
 
       {/* Balance Card */}
@@ -66,25 +71,25 @@ export default function Dashboard({ onNavigate }: Props) {
           style={{ background: 'radial-gradient(circle, #00E87A 0%, transparent 70%)', transform: 'translate(30%, -30%)' }}
         />
         <p className="text-xs font-medium mb-1" style={{ color: 'rgba(0,232,122,0.7)', letterSpacing: '0.08em' }}>
-          TOTAL BALANCE
+          SALDO TOTAL
         </p>
         <p className="text-3xl font-bold mb-4 font-mono-data" style={{ color: '#E8EDFF' }}>
           {formatCOP(balance)}
         </p>
         <div className="flex items-center gap-2">
           <span className="text-xs font-semibold px-2 py-0.5 rounded-full" style={{ background: 'rgba(0,232,122,0.15)', color: '#00E87A' }}>
-            ↑ +3.6%
+            ↑ +3,6%
           </span>
-          <span className="text-xs" style={{ color: '#5A6A8A' }}>vs last month</span>
+          <span className="text-xs" style={{ color: '#5A6A8A' }}>vs. mes anterior</span>
         </div>
       </div>
 
       {/* Stats Row */}
       <div className="mx-4 mb-4 grid grid-cols-3 gap-3">
         {[
-          { label: 'Income', value: monthlyIncome, color: '#00E87A', prefix: '+' },
-          { label: 'Spent', value: totalSpent, color: '#FF4757', prefix: '-' },
-          { label: 'Saved', value: saved, color: '#4F7FFF', prefix: '' },
+          { label: 'Ingresos', value: monthlyIncome, color: '#00E87A', prefix: '+' },
+          { label: 'Gastos', value: totalSpent, color: '#FF4757', prefix: '-' },
+          { label: 'Ahorro', value: saved, color: '#4F7FFF', prefix: '' },
         ].map(({ label, value, color, prefix }) => (
           <div
             key={label}
@@ -105,7 +110,7 @@ export default function Dashboard({ onNavigate }: Props) {
         style={{ background: '#0E1420', border: '1px solid rgba(255,255,255,0.06)' }}
       >
         <div className="flex items-center justify-between mb-3">
-          <p className="text-sm font-semibold" style={{ color: '#E8EDFF' }}>Monthly Budget</p>
+          <p className="text-sm font-semibold" style={{ color: '#E8EDFF' }}>Presupuesto mensual</p>
           <p className="text-xs font-mono-data" style={{ color: '#5A6A8A' }}>
             <span style={{ color: '#E8EDFF' }}>{formatCOPShort(totalSpent)}</span>
             {' / '}{formatCOPShort(monthlyBudget)}
@@ -123,7 +128,7 @@ export default function Dashboard({ onNavigate }: Props) {
           />
         </div>
         <div className="flex items-center justify-between mt-2">
-          <p className="text-xs" style={{ color: '#5A6A8A' }}>{budgetPct}% used · 5 days left</p>
+          <p className="text-xs" style={{ color: '#5A6A8A' }}>{budgetPct}% usado · quedan 5 días</p>
           <p className="text-xs font-semibold" style={{ color: '#00E87A' }}>
             {formatCOPShort(monthlyBudget - totalSpent)} restante
           </p>
@@ -136,13 +141,13 @@ export default function Dashboard({ onNavigate }: Props) {
         style={{ background: '#0E1420', border: '1px solid rgba(255,255,255,0.06)' }}
       >
         <div className="flex items-center justify-between mb-2">
-          <p className="text-sm font-semibold" style={{ color: '#E8EDFF' }}>Spending</p>
+          <p className="text-sm font-semibold" style={{ color: '#E8EDFF' }}>Gastos del mes</p>
           <button
             onClick={() => onNavigate('charts')}
             className="text-xs font-medium transition-opacity hover:opacity-80"
             style={{ color: '#00E87A' }}
           >
-            See charts →
+            Ver gráficas →
           </button>
         </div>
 
@@ -179,7 +184,7 @@ export default function Dashboard({ onNavigate }: Props) {
             <div
               className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none"
             >
-              <p className="text-[10px]" style={{ color: '#5A6A8A' }}>spent</p>
+              <p className="text-[10px]" style={{ color: '#5A6A8A' }}>gastado</p>
               <p className="text-sm font-bold font-mono-data" style={{ color: '#E8EDFF' }}>
                 {activeCat !== null
                   ? formatCOPShort(categories[activeCat].amount)
@@ -221,13 +226,13 @@ export default function Dashboard({ onNavigate }: Props) {
         style={{ background: '#0E1420', border: '1px solid rgba(255,255,255,0.06)' }}
       >
         <div className="flex items-center justify-between px-4 pt-4 pb-3">
-          <p className="text-sm font-semibold" style={{ color: '#E8EDFF' }}>Recent</p>
+          <p className="text-sm font-semibold" style={{ color: '#E8EDFF' }}>Recientes</p>
           <button
             onClick={() => onNavigate('transactions')}
             className="text-xs font-medium hover:opacity-80 transition-opacity"
             style={{ color: '#00E87A' }}
           >
-            All transactions →
+            Ver todos →
           </button>
         </div>
 

@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from 'react'
 import { suggestedQuestions, getAIResponse } from '../data/mockData'
+import { firstNameOf, type UserProfile } from '../lib/user'
 
 interface Message {
   id: number
@@ -9,7 +10,7 @@ interface Message {
 }
 
 function now(): string {
-  return new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true })
+  return new Date().toLocaleTimeString('es-CO', { hour: 'numeric', minute: '2-digit', hour12: true })
 }
 
 function parseBold(text: string): React.ReactNode[] {
@@ -22,17 +23,17 @@ function parseBold(text: string): React.ReactNode[] {
   })
 }
 
-const initialMessages: Message[] = [
-  {
+function welcomeMessage(name: string): Message {
+  return {
     id: 0,
     role: 'ai',
-    text: "Hi Alex! I'm your MoneyOS AI. I've analyzed your September spending. You're **$1,360 under budget** with 5 days left — great work! Ask me anything about your finances.",
-    time: '9:41 AM',
-  },
-]
+    text: `¡Hola, ${name}! Soy tu asistente de MoneyOS. Ya revisé tus gastos de septiembre: vas **$ 5.712.000 por debajo del presupuesto** y quedan 5 días del mes. ¡Muy bien! Pregúntame lo que quieras sobre tus finanzas.`,
+    time: now(),
+  }
+}
 
-export default function AIChat() {
-  const [messages, setMessages] = useState<Message[]>(initialMessages)
+export default function AIChat({ user }: { user: UserProfile }) {
+  const [messages, setMessages] = useState<Message[]>(() => [welcomeMessage(firstNameOf(user))])
   const [input, setInput] = useState('')
   const [isTyping, setIsTyping] = useState(false)
   const [suggestionsVisible, setSuggestionsVisible] = useState(true)
@@ -89,12 +90,12 @@ export default function AIChat() {
           />
         </div>
         <div>
-          <p className="text-sm font-semibold" style={{ color: '#E8EDFF' }}>MoneyOS AI</p>
-          <p className="text-xs" style={{ color: '#00E87A' }}>Online · analyzing your data</p>
+          <p className="text-sm font-semibold" style={{ color: '#E8EDFF' }}>Asistente MoneyOS</p>
+          <p className="text-xs" style={{ color: '#00E87A' }}>En línea · analizando tus datos</p>
         </div>
         <div className="ml-auto flex items-center gap-1.5">
           <span className="text-xs px-2 py-1 rounded-full" style={{ background: '#141B2D', color: '#5A6A8A' }}>
-            GPT-4o
+            Beta
           </span>
         </div>
       </div>
@@ -162,7 +163,7 @@ export default function AIChat() {
         {/* Suggested questions */}
         {suggestionsVisible && (
           <div className="fade-up">
-            <p className="text-xs mb-2 ml-9" style={{ color: '#3A4A6A' }}>Suggested</p>
+            <p className="text-xs mb-2 ml-9" style={{ color: '#3A4A6A' }}>Sugerencias</p>
             <div className="flex flex-wrap gap-2 ml-9">
               {suggestedQuestions.map(q => (
                 <button
@@ -201,7 +202,7 @@ export default function AIChat() {
             value={input}
             onChange={e => setInput(e.target.value)}
             onKeyDown={e => e.key === 'Enter' && sendMessage(input)}
-            placeholder="Ask about your finances…"
+            placeholder="Pregunta sobre tus finanzas…"
             className="flex-1 bg-transparent text-base outline-none placeholder:text-sm"
             style={{
               color: '#E8EDFF',
@@ -223,7 +224,7 @@ export default function AIChat() {
           </button>
         </div>
         <p className="text-center text-[10px] mt-2" style={{ color: '#2A3550' }}>
-          AI insights are for reference only, not financial advice
+          Las respuestas son solo orientativas, no son asesoría financiera
         </p>
       </div>
     </div>

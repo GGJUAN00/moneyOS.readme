@@ -2,12 +2,12 @@ import { useState } from 'react'
 import { transactions, formatCOP, formatCOPShort } from '../data/mockData'
 
 const categoryColors: Record<string, string> = {
-  Food: '#00E87A',
-  Transport: '#4F7FFF',
-  Shopping: '#FF4757',
-  Entertainment: '#FFB800',
-  Bills: '#9B59B6',
-  Income: '#00E87A',
+  Comida: '#00E87A',
+  Transporte: '#4F7FFF',
+  Compras: '#FF4757',
+  Entretenimiento: '#FFB800',
+  Facturas: '#9B59B6',
+  Ingreso: '#00E87A',
 }
 
 function groupByDate(txs: typeof transactions) {
@@ -24,16 +24,17 @@ function formatDate(dateStr: string): string {
   const date = new Date(dateStr + 'T00:00:00')
   const today = new Date('2026-09-25T00:00:00')
   const diff = Math.round((today.getTime() - date.getTime()) / (1000 * 60 * 60 * 24))
-  if (diff === 0) return 'Today'
-  if (diff === 1) return 'Yesterday'
-  return date.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })
+  if (diff === 0) return 'Hoy'
+  if (diff === 1) return 'Ayer'
+  // e.g. "mié, 23 sept" (Colombian Spanish)
+  return date.toLocaleDateString('es-CO', { weekday: 'short', month: 'short', day: 'numeric' }).replace(/\./g, '')
 }
 
 export default function Transactions() {
-  const [filter, setFilter] = useState<string>('All')
-  const categories = ['All', 'Food', 'Shopping', 'Bills', 'Transport', 'Entertainment']
+  const [filter, setFilter] = useState<string>('Todos')
+  const categories = ['Todos', 'Comida', 'Compras', 'Facturas', 'Transporte', 'Entretenimiento']
 
-  const filtered = filter === 'All'
+  const filtered = filter === 'Todos'
     ? transactions
     : transactions.filter(tx => tx.category === filter)
 
@@ -70,7 +71,7 @@ export default function Transactions() {
               className="px-3 py-1.5 rounded-full text-xs font-medium transition-all duration-200 flex-shrink-0"
               style={filter === cat
                 ? {
-                    background: cat === 'All' ? '#00E87A' : categoryColors[cat] ?? '#00E87A',
+                    background: cat === 'Todos' ? '#00E87A' : categoryColors[cat] ?? '#00E87A',
                     color: '#06090F',
                   }
                 : {

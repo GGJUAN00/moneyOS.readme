@@ -3,6 +3,9 @@ import Dashboard from './components/Dashboard'
 import Charts from './components/Charts'
 import Transactions from './components/Transactions'
 import AIChat from './components/AIChat'
+import Registration from './components/Registration'
+import ProfileSheet from './components/ProfileSheet'
+import { clearUser, loadUser, type UserProfile } from './lib/user'
 
 type Tab = 'home' | 'charts' | 'transactions' | 'ai'
 
@@ -61,14 +64,23 @@ function AIIcon({ active }: { active: boolean }) {
 }
 
 const tabs: { key: Tab; label: string; Icon: React.ComponentType<{ active: boolean }> }[] = [
-  { key: 'home', label: 'Home', Icon: HomeIcon },
-  { key: 'charts', label: 'Charts', Icon: ChartIcon },
-  { key: 'transactions', label: 'Activity', Icon: ListIcon },
-  { key: 'ai', label: 'AI', Icon: AIIcon },
+  { key: 'home', label: 'Inicio', Icon: HomeIcon },
+  { key: 'charts', label: 'Gráficas', Icon: ChartIcon },
+  { key: 'transactions', label: 'Movimientos', Icon: ListIcon },
+  { key: 'ai', label: 'Asistente', Icon: AIIcon },
 ]
 
 export default function App() {
   const [tab, setTab] = useState<Tab>('home')
+  const [user, setUser] = useState<UserProfile | null>(() => loadUser())
+  const [profileOpen, setProfileOpen] = useState(false)
+
+  function handleDeleteUser() {
+    clearUser()
+    setProfileOpen(false)
+    setTab('home')
+    setUser(null)
+  }
 
   return (
     <div
@@ -108,17 +120,31 @@ export default function App() {
           style={{ top: 0, width: 120, height: 34, background: '#06090F', zIndex: 10 }}
         />
 
+        {/* First launch on this device: registration instead of the app */}
+        {!user && (
+          <div className="flex-1 overflow-hidden" style={{ minHeight: 0, paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}>
+            <Registration onComplete={setUser} />
+          </div>
+        )}
+
         {/* Content area */}
+        {user && (
         <div className="flex-1 overflow-hidden" style={{ minHeight: 0 }}>
           {tab === 'home' && (
-            <Dashboard onNavigate={(t) => setTab(t)} />
+            <Dashboard user={user} onNavigate={(t) => setTab(t)} onOpenProfile={() => setProfileOpen(true)} />
           )}
           {tab === 'charts' && <Charts />}
           {tab === 'transactions' && <Transactions />}
-          {tab === 'ai' && <AIChat />}
+          {tab === 'ai' && <AIChat user={user} />}
         </div>
+        )}
+
+        {user && profileOpen && (
+          <ProfileSheet user={user} onClose={() => setProfileOpen(false)} onDelete={handleDeleteUser} />
+        )}
 
         {/* Bottom navigation */}
+        {user && (
         <div
           className="flex items-stretch flex-shrink-0"
           style={{
@@ -155,6 +181,7 @@ export default function App() {
             )
           })}
         </div>
+        )}
       </div>
     </div>
   )

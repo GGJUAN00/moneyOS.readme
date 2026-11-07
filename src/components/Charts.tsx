@@ -32,17 +32,17 @@ export default function Charts() {
   const [activeBar, setActiveBar] = useState<number | null>(null)
 
   const views: { key: View; label: string }[] = [
-    { key: 'monthly', label: 'Monthly' },
-    { key: 'weekly', label: 'Weekly' },
-    { key: 'networth', label: 'Net Worth' },
+    { key: 'monthly', label: 'Mensual' },
+    { key: 'weekly', label: 'Semanal' },
+    { key: 'networth', label: 'Patrimonio' },
   ]
 
   return (
     <div className="h-full overflow-y-auto scrollbar-hide" style={{ background: '#06090F' }}>
       {/* Header */}
       <div className="px-6 pt-4 pb-3">
-        <p className="text-xl font-bold" style={{ color: '#E8EDFF' }}>Analytics</p>
-        <p className="text-xs mt-0.5" style={{ color: '#5A6A8A' }}>September 2026</p>
+        <p className="text-xl font-bold" style={{ color: '#E8EDFF' }}>Análisis</p>
+        <p className="text-xs mt-0.5" style={{ color: '#5A6A8A' }}>Septiembre 2026</p>
       </div>
 
       {/* View Tabs */}
@@ -76,7 +76,7 @@ export default function Charts() {
                 <p className="text-2xl font-bold font-mono-data mt-0.5" style={{ color: '#E8EDFF' }}>{formatCOPShort(totalSpent)}</p>
               </div>
               <span className="text-xs px-2 py-1 rounded-full font-medium" style={{ background: 'rgba(0,232,122,0.12)', color: '#00E87A' }}>
-                ↓ 4.5% vs avg
+                ↓ 4,5% vs. promedio
               </span>
             </div>
             <div style={{ height: 180 }}>
@@ -89,7 +89,7 @@ export default function Charts() {
                     tickLine={false}
                   />
                   <YAxis
-                    width={66}
+                    width={72}
                     tick={{ fill: '#5A6A8A', fontSize: 10, fontFamily: 'JetBrains Mono' }}
                     axisLine={false}
                     tickLine={false}
@@ -134,7 +134,7 @@ export default function Charts() {
                         <span className="text-sm" style={{ color: '#E8EDFF' }}>{cat.name}</span>
                         {overBudget && (
                           <span className="text-[10px] px-1.5 py-0.5 rounded-full font-medium" style={{ background: 'rgba(255,71,87,0.15)', color: '#FF4757' }}>
-                            over
+                            excedido
                           </span>
                         )}
                       </div>
@@ -175,7 +175,7 @@ export default function Charts() {
                 <p className="text-2xl font-bold font-mono-data mt-0.5" style={{ color: '#E8EDFF' }}>{formatCOPShort(weeklySpending.reduce((s, d) => s + d.amount, 0))}</p>
               </div>
               <span className="text-xs px-2 py-1 rounded-full font-medium" style={{ background: 'rgba(255,71,87,0.12)', color: '#FF4757' }}>
-                ↑ 12% vs last week
+                ↑ 12% vs. semana anterior
               </span>
             </div>
             <div style={{ height: 200 }}>
@@ -188,7 +188,7 @@ export default function Charts() {
                     tickLine={false}
                   />
                   <YAxis
-                    width={66}
+                    width={72}
                     tick={{ fill: '#5A6A8A', fontSize: 10, fontFamily: 'JetBrains Mono' }}
                     axisLine={false}
                     tickLine={false}
@@ -256,7 +256,7 @@ export default function Charts() {
                 <p className="text-2xl font-bold font-mono-data mt-0.5" style={{ color: '#E8EDFF' }}>{formatCOPShort(netWorthTrend[netWorthTrend.length - 1].value)}</p>
               </div>
               <span className="text-xs px-2 py-1 rounded-full font-medium" style={{ background: 'rgba(0,232,122,0.12)', color: '#00E87A' }}>
-                ↑ +{formatCOPShort(netWorthTrend[netWorthTrend.length - 1].value - netWorthTrend[0].value)} (6m)
+                ↑ +{formatCOPShort(netWorthTrend[netWorthTrend.length - 1].value - netWorthTrend[0].value)} (6 meses)
               </span>
             </div>
             <div style={{ height: 200 }}>
@@ -276,7 +276,7 @@ export default function Charts() {
                     tickLine={false}
                   />
                   <YAxis
-                    width={66}
+                    width={72}
                     tick={{ fill: '#5A6A8A', fontSize: 10, fontFamily: 'JetBrains Mono' }}
                     axisLine={false}
                     tickLine={false}
@@ -303,7 +303,7 @@ export default function Charts() {
             className="mx-4 mb-6 rounded-2xl p-4"
             style={{ background: '#0E1420', border: '1px solid rgba(255,255,255,0.06)' }}
           >
-            <p className="text-sm font-semibold mb-3" style={{ color: '#E8EDFF' }}>Milestones</p>
+            <p className="text-sm font-semibold mb-3" style={{ color: '#E8EDFF' }}>Metas</p>
             {[
               { label: 'Fondo de Emergencia (3 meses)', current: 104_370_000, target: 90_720_000, done: true },
               { label: 'Cuota Inicial Casa', current: 104_370_000, target: 252_000_000, done: false },
