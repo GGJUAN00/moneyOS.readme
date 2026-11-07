@@ -1,0 +1,100 @@
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&display=swap');
+@import 'tailwindcss';
+
+@theme {
+  --font-display: 'Outfit', sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+
+  --color-bg: #06090F;
+  --color-surface: #0E1420;
+  --color-surface-2: #141B2D;
+  --color-surface-3: #1C2540;
+  --color-accent: #00E87A;
+  --color-accent-dim: rgba(0, 232, 122, 0.12);
+  --color-danger: #FF4757;
+  --color-danger-dim: rgba(255, 71, 87, 0.12);
+  --color-warning: #FFB800;
+  --color-text: #E8EDFF;
+  --color-muted: #5A6A8A;
+  --color-border: rgba(255, 255, 255, 0.06);
+  --color-border-strong: rgba(255, 255, 255, 0.12);
+}
+
+*, *::before, *::after {
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+}
+
+body {
+  margin: 0;
+  font-family: 'Outfit', sans-serif;
+  background-color: #02040A;
+  color: #E8EDFF;
+  overscroll-behavior: none;
+  -webkit-font-smoothing: antialiased;
+}
+
+.font-mono-data {
+  font-family: 'JetBrains Mono', monospace;
+}
+
+.scrollbar-hide::-webkit-scrollbar { display: none; }
+.scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+
+/* ---- App frame ----
+   Desktop/tablet: the framed phone mockup from the Figma design.
+   Real phone: full-screen app that respects the notch / home indicator. */
+.app-stage {
+  min-height: 100vh;
+  min-height: 100dvh;
+}
+
+.phone-shell {
+  width: 100%;
+  max-width: 390px;
+  height: 100vh;
+  height: 100dvh;
+  max-height: 844px;
+  background: #06090F;
+  border-radius: clamp(0px, 5vw, 50px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 0 0 8px #0A0C12, 0 0 0 9px rgba(255, 255, 255, 0.04), 0 60px 120px rgba(0, 0, 0, 0.8);
+}
+
+@media (max-width: 500px) {
+  .phone-shell {
+    max-width: none;
+    max-height: none;
+    border-radius: 0;
+    border: none;
+    box-shadow: none;
+    padding-top: env(safe-area-inset-top, 0px);
+  }
+  .mock-chrome { display: none !important; }
+}
+
+@keyframes pulse-dot {
+  0%, 80%, 100% { transform: scale(0.6); opacity: 0.4; }
+  40% { transform: scale(1); opacity: 1; }
+}
+
+@keyframes fade-up {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes glow-pulse {
+  0%, 100% { box-shadow: 0 0 20px rgba(0, 232, 122, 0.15); }
+  50% { box-shadow: 0 0 40px rgba(0, 232, 122, 0.3); }
+}
+
+.typing-dot {
+  animation: pulse-dot 1.4s infinite ease-in-out both;
+}
+.typing-dot:nth-child(2) { animation-delay: 0.2s; }
+.typing-dot:nth-child(3) { animation-delay: 0.4s; }
+
+.fade-up { animation: fade-up 0.3s ease forwards; }
+
+.accent-glow { animation: glow-pulse 3s ease-in-out infinite; }
