@@ -20,12 +20,20 @@ pueden ver o borrar tocando las iniciales arriba a la derecha.
 
 ## Pantallas
 
-- **Inicio**: saludo con tu nombre, saldo total, ingresos/gastos/ahorro, presupuesto mensual, gastos por categoría y últimos movimientos.
-- **Gráficas**: gasto mensual, semanal y patrimonio, con desglose por categoría y metas.
-- **Movimientos**: todas las transacciones agrupadas por día, con filtro por categoría.
-- **Asistente**: chat de preguntas sobre tus finanzas (respuestas de ejemplo, todavía sin IA real).
+- **Inicio**: saludo con tu nombre, saldo disponible, botones **Agregar dinero** y **Transacción**, ingresos/gastos/ahorro del mes, presupuesto mensual, gastos por categoría y últimos movimientos.
+- **Gráficas**: gasto por mes (últimos 6), gasto de la semana día por día y evolución del saldo.
+- **Movimientos**: todo lo que has anotado, agrupado por día y con filtro por categoría. Toca un movimiento para editarlo o borrarlo.
+- **Asistente**: responde preguntas (saldo, en qué gastas más, presupuesto, ahorro, una categoría) calculando con tus propios datos.
 
-> Los datos son de ejemplo (`src/data/mockData.ts`), tal como venían en el diseño.
+## Cómo se usa
+
+La app empieza con saldo **$ 0**. No se conecta a Nequi ni a ningún banco: tú anotas tu plata.
+
+1. **Agregar dinero** → escribe lo que tienes hoy en Nequi (categoría *Saldo inicial*). Úsalo también cada vez que te entre plata (salario, te enviaron, etc.).
+2. **Transacción** → cada vez que gastes, escribe el monto y elige el tipo de gasto: Comida, Transporte, Compras, Facturas, Entretenimiento, Salud, Educación, Hogar, Envíos u Otros.
+3. Opcional: toca **Presupuesto mensual** para ponerte un límite de gasto.
+
+Todo se guarda solo en el dispositivo.
 
 ## Instalar en el iPhone
 

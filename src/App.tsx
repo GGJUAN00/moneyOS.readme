@@ -5,7 +5,20 @@ import Transactions from './components/Transactions'
 import AIChat from './components/AIChat'
 import Registration from './components/Registration'
 import ProfileSheet from './components/ProfileSheet'
+import EntrySheet from './components/EntrySheet'
+import BudgetSheet from './components/BudgetSheet'
 import { clearUser, loadUser, type UserProfile } from './lib/user'
+import {
+  balanceOf,
+  clearFinanceData,
+  loadSettings,
+  loadTransactions,
+  saveSettings,
+  saveTransactions,
+  type Settings,
+  type Transaction,
+  type TxType,
+} from './lib/finance'
 
 type Tab = 'home' | 'charts' | 'transactions' | 'ai'
 
@@ -74,13 +87,47 @@ export default function App() {
   const [tab, setTab] = useState<Tab>('home')
   const [user, setUser] = useState<UserProfile | null>(() => loadUser())
   const [profileOpen, setProfileOpen] = useState(false)
+  const [transactions, setTransactions] = useState<Transaction[]>(() => loadTransactions())
+  const [settings, setSettings] = useState<Settings>(() => loadSettings())
+  // Open entry sheet: a new movement of some type, or an existing one to edit
+  const [entry, setEntry] = useState<{ type: TxType; existing?: Transaction } | null>(null)
+  const [budgetOpen, setBudgetOpen] = useState(false)
+
+  function updateTransactions(next: Transaction[]) {
+    setTransactions(next)
+    saveTransactions(next)
+  }
+
+  function handleSaveEntry(tx: Transaction) {
+    const exists = transactions.some(t => t.id === tx.id)
+    updateTransactions(exists ? transactions.map(t => (t.id === tx.id ? tx : t)) : [...transactions, tx])
+    setEntry(null)
+  }
+
+  function handleDeleteEntry(id: string) {
+    updateTransactions(transactions.filter(t => t.id !== id))
+    setEntry(null)
+  }
+
+  function handleSaveBudget(amount: number) {
+    const next = { ...settings, monthlyBudget: amount }
+    setSettings(next)
+    saveSettings(next)
+    setBudgetOpen(false)
+  }
 
   function handleDeleteUser() {
     clearUser()
+    clearFinanceData()
+    setTransactions([])
+    setSettings({ monthlyBudget: 0 })
     setProfileOpen(false)
     setTab('home')
     setUser(null)
   }
+
+  const openAdd = (type: TxType) => setEntry({ type })
+  const openEdit = (tx: Transaction) => setEntry({ type: tx.type, existing: tx })
 
   return (
     <div
@@ -131,12 +178,38 @@ export default function App() {
         {user && (
         <div className="flex-1 overflow-hidden" style={{ minHeight: 0 }}>
           {tab === 'home' && (
-            <Dashboard user={user} onNavigate={(t) => setTab(t)} onOpenProfile={() => setProfileOpen(true)} />
+            <Dashboard
+              user={user}
+              transactions={transactions}
+              settings={settings}
+              onNavigate={(t) => setTab(t)}
+              onOpenProfile={() => setProfileOpen(true)}
+              onAdd={openAdd}
+              onEdit={openEdit}
+              onEditBudget={() => setBudgetOpen(true)}
+            />
           )}
-          {tab === 'charts' && <Charts />}
-          {tab === 'transactions' && <Transactions />}
-          {tab === 'ai' && <AIChat user={user} />}
+          {tab === 'charts' && <Charts transactions={transactions} />}
+          {tab === 'transactions' && <Transactions transactions={transactions} onAdd={openAdd} onEdit={openEdit} />}
+          {tab === 'ai' && <AIChat user={user} transactions={transactions} settings={settings} />}
         </div>
+        )}
+
+        {user && entry && (
+          <EntrySheet
+            key={entry.existing?.id ?? entry.type}
+            type={entry.type}
+            existing={entry.existing}
+            isFirst={transactions.length === 0}
+            balance={balanceOf(transactions)}
+            onSave={handleSaveEntry}
+            onDelete={handleDeleteEntry}
+            onClose={() => setEntry(null)}
+          />
+        )}
+
+        {user && budgetOpen && (
+          <BudgetSheet current={settings.monthlyBudget} onSave={handleSaveBudget} onClose={() => setBudgetOpen(false)} />
         )}
 
         {user && profileOpen && (

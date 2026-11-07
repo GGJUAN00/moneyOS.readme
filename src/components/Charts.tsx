@@ -3,9 +3,22 @@ import {
   BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell,
   AreaChart, Area, CartesianGrid,
 } from 'recharts'
-import { monthlySpending, netWorthTrend, weeklySpending, categories, totalSpent, formatCOP, formatCOPShort } from '../data/mockData'
+import {
+  balanceOf,
+  balanceTrend,
+  inMonth,
+  monthlySpending,
+  previousWeekSpent,
+  spendingByCategory,
+  spentOf,
+  weeklySpending,
+  type Transaction,
+} from '../lib/finance'
+import { formatCOP, formatCOPShort, formatPct, monthTitle } from '../lib/format'
 
 type View = 'monthly' | 'weekly' | 'networth'
+
+const card = { background: '#0E1420', border: '1px solid rgba(255,255,255,0.06)' }
 
 function BarTooltip({ active, payload, label }: { active?: boolean; payload?: { value: number }[]; label?: string }) {
   if (!active || !payload?.length) return null
@@ -19,22 +32,61 @@ function BarTooltip({ active, payload, label }: { active?: boolean; payload?: { 
 
 function AreaTooltip({ active, payload, label }: { active?: boolean; payload?: { value: number }[]; label?: string }) {
   if (!active || !payload?.length) return null
+  const v = payload[0].value
   return (
     <div style={{ background: '#141B2D', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 10 }} className="px-3 py-2">
       <p className="text-xs mb-0.5" style={{ color: '#5A6A8A' }}>{label}</p>
-      <p className="text-sm font-semibold font-mono-data" style={{ color: '#00E87A' }}>{formatCOP(payload[0].value)}</p>
+      <p className="text-sm font-semibold font-mono-data" style={{ color: v < 0 ? '#FF4757' : '#00E87A' }}>{v < 0 ? '-' : ''}{formatCOP(v)}</p>
     </div>
   )
 }
 
-export default function Charts() {
+function Badge({ good, children }: { good: boolean; children: React.ReactNode }) {
+  return (
+    <span
+      className="text-xs px-2 py-1 rounded-full font-medium"
+      style={good ? { background: 'rgba(0,232,122,0.12)', color: '#00E87A' } : { background: 'rgba(255,71,87,0.12)', color: '#FF4757' }}
+    >
+      {children}
+    </span>
+  )
+}
+
+function Empty({ text }: { text: string }) {
+  return <p className="text-xs text-center py-10" style={{ color: '#5A6A8A' }}>{text}</p>
+}
+
+const axisTick = { fill: '#5A6A8A', fontSize: 10, fontFamily: 'JetBrains Mono' }
+const labelTick = { fill: '#5A6A8A', fontSize: 11, fontFamily: 'Outfit' }
+
+export default function Charts({ transactions }: { transactions: Transaction[] }) {
   const [view, setView] = useState<View>('monthly')
   const [activeBar, setActiveBar] = useState<number | null>(null)
+
+  const now = new Date()
+  const months = monthlySpending(transactions, 6, now)
+  const thisMonth = months[months.length - 1]
+  const previous = months.slice(0, -1).filter(m => m.spent > 0)
+  const avgPrev = previous.length ? previous.reduce((s, m) => s + m.spent, 0) / previous.length : 0
+  const vsAvg = avgPrev > 0 ? ((thisMonth.spent - avgPrev) / avgPrev) * 100 : null
+  const categories = spendingByCategory(inMonth(transactions, now))
+  const monthSpent = spentOf(inMonth(transactions, now))
+
+  const week = weeklySpending(transactions, now)
+  const weekTotal = week.reduce((s, d) => s + d.amount, 0)
+  const weekMax = Math.max(...week.map(d => d.amount), 0)
+  const prevWeek = previousWeekSpent(transactions, now)
+  const vsWeek = prevWeek > 0 ? ((weekTotal - prevWeek) / prevWeek) * 100 : null
+
+  const trend = balanceTrend(transactions, 6, now)
+  const balance = balanceOf(transactions)
+  const firstWithMoney = trend.find(t => t.value !== 0)
+  const trendChange = firstWithMoney ? balance - firstWithMoney.value : 0
 
   const views: { key: View; label: string }[] = [
     { key: 'monthly', label: 'Mensual' },
     { key: 'weekly', label: 'Semanal' },
-    { key: 'networth', label: 'Patrimonio' },
+    { key: 'networth', label: 'Saldo' },
   ]
 
   return (
@@ -42,7 +94,7 @@ export default function Charts() {
       {/* Header */}
       <div className="px-6 pt-4 pb-3">
         <p className="text-xl font-bold" style={{ color: '#E8EDFF' }}>Análisis</p>
-        <p className="text-xs mt-0.5" style={{ color: '#5A6A8A' }}>Septiembre 2026</p>
+        <p className="text-xs mt-0.5" style={{ color: '#5A6A8A' }}>{monthTitle(now)}</p>
       </div>
 
       {/* View Tabs */}
@@ -63,177 +115,119 @@ export default function Charts() {
         ))}
       </div>
 
-      {/* Monthly Spending Chart */}
+      {/* Monthly */}
       {view === 'monthly' && (
         <div className="fade-up">
-          <div
-            className="mx-4 mb-4 rounded-2xl p-4"
-            style={{ background: '#0E1420', border: '1px solid rgba(255,255,255,0.06)' }}
-          >
+          <div className="mx-4 mb-4 rounded-2xl p-4" style={card}>
             <div className="flex items-end justify-between mb-4">
               <div>
-                <p className="text-xs" style={{ color: '#5A6A8A' }}>Gasto 6 Meses</p>
-                <p className="text-2xl font-bold font-mono-data mt-0.5" style={{ color: '#E8EDFF' }}>{formatCOPShort(totalSpent)}</p>
+                <p className="text-xs" style={{ color: '#5A6A8A' }}>Gasto este mes</p>
+                <p className="text-2xl font-bold font-mono-data mt-0.5" style={{ color: '#E8EDFF' }}>{formatCOPShort(thisMonth.spent)}</p>
               </div>
-              <span className="text-xs px-2 py-1 rounded-full font-medium" style={{ background: 'rgba(0,232,122,0.12)', color: '#00E87A' }}>
-                ↓ 4,5% vs. promedio
-              </span>
+              {vsAvg !== null && (
+                <Badge good={vsAvg <= 0}>{vsAvg <= 0 ? '↓ ' : '↑ '}{formatPct(Math.abs(vsAvg))} vs. promedio</Badge>
+              )}
             </div>
-            <div style={{ height: 180 }}>
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={monthlySpending} barSize={28} margin={{ top: 4, right: 4, left: 0, bottom: 0 }}>
-                  <XAxis
-                    dataKey="month"
-                    tick={{ fill: '#5A6A8A', fontSize: 11, fontFamily: 'Outfit' }}
-                    axisLine={false}
-                    tickLine={false}
-                  />
-                  <YAxis
-                    width={72}
-                    tick={{ fill: '#5A6A8A', fontSize: 10, fontFamily: 'JetBrains Mono' }}
-                    axisLine={false}
-                    tickLine={false}
-                    tickFormatter={v => formatCOPShort(v)}
-                  />
-                  <Tooltip content={<BarTooltip />} cursor={{ fill: 'rgba(255,255,255,0.03)', radius: 8 }} />
-                  <Bar
-                    dataKey="spent"
-                    radius={[6, 6, 2, 2]}
-                    onMouseEnter={(_, i) => setActiveBar(i)}
-                    onMouseLeave={() => setActiveBar(null)}
-                  >
-                    {monthlySpending.map((_, i) => (
-                      <Cell
-                        key={i}
-                        fill={i === monthlySpending.length - 1 || i === activeBar
-                          ? '#00E87A'
-                          : '#1C2540'}
-                      />
-                    ))}
-                  </Bar>
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
+            {months.every(m => m.spent === 0) ? (
+              <Empty text="Cuando anotes gastos, aquí verás cuánto gastas cada mes" />
+            ) : (
+              <div style={{ height: 180 }}>
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={months} barSize={28} margin={{ top: 4, right: 4, left: 0, bottom: 0 }}>
+                    <XAxis dataKey="month" tick={labelTick} axisLine={false} tickLine={false} />
+                    <YAxis width={72} tick={axisTick} axisLine={false} tickLine={false} tickFormatter={v => formatCOPShort(v)} />
+                    <Tooltip content={<BarTooltip />} cursor={{ fill: 'rgba(255,255,255,0.03)', radius: 8 }} />
+                    <Bar dataKey="spent" radius={[6, 6, 2, 2]} onMouseEnter={(_, i) => setActiveBar(i)} onMouseLeave={() => setActiveBar(null)}>
+                      {months.map((_, i) => (
+                        <Cell key={i} fill={i === months.length - 1 || i === activeBar ? '#00E87A' : '#1C2540'} />
+                      ))}
+                    </Bar>
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            )}
           </div>
 
           {/* Category Breakdown */}
-          <div
-            className="mx-4 mb-6 rounded-2xl p-4"
-            style={{ background: '#0E1420', border: '1px solid rgba(255,255,255,0.06)' }}
-          >
-            <p className="text-sm font-semibold mb-4" style={{ color: '#E8EDFF' }}>Por Categoría</p>
-            <div className="space-y-3">
-              {categories.map(cat => {
-                const pct = Math.round((cat.amount / totalSpent) * 100)
-                const overBudget = cat.amount > cat.budget
-                return (
-                  <div key={cat.name}>
-                    <div className="flex items-center justify-between mb-1.5">
-                      <div className="flex items-center gap-2">
-                        <span className="text-base">{cat.icon}</span>
-                        <span className="text-sm" style={{ color: '#E8EDFF' }}>{cat.name}</span>
-                        {overBudget && (
-                          <span className="text-[10px] px-1.5 py-0.5 rounded-full font-medium" style={{ background: 'rgba(255,71,87,0.15)', color: '#FF4757' }}>
-                            excedido
-                          </span>
-                        )}
+          <div className="mx-4 mb-6 rounded-2xl p-4" style={card}>
+            <p className="text-sm font-semibold mb-4" style={{ color: '#E8EDFF' }}>Por categoría</p>
+            {categories.length === 0 ? (
+              <Empty text="Aún no hay gastos este mes" />
+            ) : (
+              <div className="space-y-3">
+                {categories.map(cat => {
+                  const pct = monthSpent > 0 ? (cat.amount / monthSpent) * 100 : 0
+                  return (
+                    <div key={cat.name}>
+                      <div className="flex items-center justify-between mb-1.5">
+                        <div className="flex items-center gap-2">
+                          <span className="text-base">{cat.icon}</span>
+                          <span className="text-sm" style={{ color: '#E8EDFF' }}>{cat.name}</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <span className="text-xs font-mono-data" style={{ color: '#5A6A8A' }}>{Math.round(pct)}%</span>
+                          <span className="text-sm font-semibold font-mono-data" style={{ color: '#E8EDFF' }}>{formatCOPShort(cat.amount)}</span>
+                        </div>
                       </div>
-                      <div className="flex items-center gap-2">
-                        <span className="text-xs font-mono-data" style={{ color: '#5A6A8A' }}>{pct}%</span>
-                        <span className="text-sm font-semibold font-mono-data" style={{ color: overBudget ? '#FF4757' : '#E8EDFF' }}>
-                          {formatCOPShort(cat.amount)}
-                        </span>
+                      <div className="relative h-1.5 rounded-full overflow-hidden" style={{ background: '#1C2540' }}>
+                        <div className="absolute left-0 top-0 h-full rounded-full" style={{ width: `${pct}%`, background: cat.color, transition: 'width 0.6s ease' }} />
                       </div>
+                      <p className="text-[10px] mt-1" style={{ color: '#3A4A6A' }}>
+                        {cat.count} {cat.count === 1 ? 'movimiento' : 'movimientos'}
+                      </p>
                     </div>
-                    <div className="relative h-1.5 rounded-full overflow-hidden" style={{ background: '#1C2540' }}>
-                      <div
-                        className="absolute left-0 top-0 h-full rounded-full"
-                        style={{ width: `${pct}%`, background: cat.color, transition: 'width 0.6s ease' }}
-                      />
-                    </div>
-                    <p className="text-[10px] mt-1" style={{ color: '#3A4A6A' }}>
-                      Presupuesto: {formatCOPShort(cat.budget)} · {overBudget ? `${formatCOPShort(cat.amount - cat.budget)} excedido` : `${formatCOPShort(cat.budget - cat.amount)} restante`}
-                    </p>
-                  </div>
-                )
-              })}
-            </div>
+                  )
+                })}
+              </div>
+            )}
           </div>
         </div>
       )}
 
-      {/* Weekly Chart */}
+      {/* Weekly */}
       {view === 'weekly' && (
         <div className="fade-up">
-          <div
-            className="mx-4 mb-4 rounded-2xl p-4"
-            style={{ background: '#0E1420', border: '1px solid rgba(255,255,255,0.06)' }}
-          >
+          <div className="mx-4 mb-4 rounded-2xl p-4" style={card}>
             <div className="flex items-end justify-between mb-4">
               <div>
-                <p className="text-xs" style={{ color: '#5A6A8A' }}>Esta Semana</p>
-                <p className="text-2xl font-bold font-mono-data mt-0.5" style={{ color: '#E8EDFF' }}>{formatCOPShort(weeklySpending.reduce((s, d) => s + d.amount, 0))}</p>
+                <p className="text-xs" style={{ color: '#5A6A8A' }}>Esta semana</p>
+                <p className="text-2xl font-bold font-mono-data mt-0.5" style={{ color: '#E8EDFF' }}>{formatCOPShort(weekTotal)}</p>
               </div>
-              <span className="text-xs px-2 py-1 rounded-full font-medium" style={{ background: 'rgba(255,71,87,0.12)', color: '#FF4757' }}>
-                ↑ 12% vs. semana anterior
-              </span>
+              {vsWeek !== null && (
+                <Badge good={vsWeek <= 0}>{vsWeek <= 0 ? '↓ ' : '↑ '}{formatPct(Math.abs(vsWeek), 0)} vs. semana anterior</Badge>
+              )}
             </div>
-            <div style={{ height: 200 }}>
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={weeklySpending} barSize={28} margin={{ top: 4, right: 4, left: 0, bottom: 0 }}>
-                  <XAxis
-                    dataKey="day"
-                    tick={{ fill: '#5A6A8A', fontSize: 11, fontFamily: 'Outfit' }}
-                    axisLine={false}
-                    tickLine={false}
-                  />
-                  <YAxis
-                    width={72}
-                    tick={{ fill: '#5A6A8A', fontSize: 10, fontFamily: 'JetBrains Mono' }}
-                    axisLine={false}
-                    tickLine={false}
-                    tickFormatter={v => formatCOPShort(v)}
-                  />
-                  <Tooltip content={<BarTooltip />} cursor={{ fill: 'rgba(255,255,255,0.03)', radius: 8 }} />
-                  <Bar dataKey="amount" radius={[6, 6, 2, 2]}>
-                    {weeklySpending.map((entry, i) => (
-                      <Cell
-                        key={i}
-                        fill={entry.amount === Math.max(...weeklySpending.map(d => d.amount))
-                          ? '#FF4757'
-                          : i === weeklySpending.length - 1
-                          ? '#00E87A'
-                          : '#1C2540'}
-                      />
-                    ))}
-                  </Bar>
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
+            {weekTotal === 0 ? (
+              <Empty text="No has anotado gastos esta semana" />
+            ) : (
+              <div style={{ height: 200 }}>
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={week} barSize={28} margin={{ top: 4, right: 4, left: 0, bottom: 0 }}>
+                    <XAxis dataKey="day" tick={labelTick} axisLine={false} tickLine={false} />
+                    <YAxis width={72} tick={axisTick} axisLine={false} tickLine={false} tickFormatter={v => formatCOPShort(v)} />
+                    <Tooltip content={<BarTooltip />} cursor={{ fill: 'rgba(255,255,255,0.03)', radius: 8 }} />
+                    <Bar dataKey="amount" radius={[6, 6, 2, 2]}>
+                      {week.map((d, i) => (
+                        <Cell key={i} fill={d.amount > 0 && d.amount === weekMax ? '#FF4757' : d.isToday ? '#00E87A' : '#1C2540'} />
+                      ))}
+                    </Bar>
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            )}
           </div>
 
-          {/* Daily Breakdown */}
-          <div
-            className="mx-4 mb-6 rounded-2xl overflow-hidden"
-            style={{ background: '#0E1420', border: '1px solid rgba(255,255,255,0.06)' }}
-          >
+          <div className="mx-4 mb-6 rounded-2xl overflow-hidden" style={card}>
             <div className="px-4 pt-4 pb-2">
-              <p className="text-sm font-semibold" style={{ color: '#E8EDFF' }}>Promedio Diario</p>
+              <p className="text-sm font-semibold" style={{ color: '#E8EDFF' }}>Día por día</p>
             </div>
-            {weeklySpending.map((d, i) => (
-              <div
-                key={d.day}
-                className="flex items-center gap-3 px-4 py-3"
-                style={{ borderTop: i > 0 ? '1px solid rgba(255,255,255,0.04)' : 'none' }}
-              >
-                <p className="text-sm w-8" style={{ color: '#5A6A8A' }}>{d.day}</p>
+            {week.map((d, i) => (
+              <div key={d.day} className="flex items-center gap-3 px-4 py-3" style={{ borderTop: i > 0 ? '1px solid rgba(255,255,255,0.04)' : 'none', opacity: d.isFuture ? 0.4 : 1 }}>
+                <p className="text-sm w-8" style={{ color: d.isToday ? '#00E87A' : '#5A6A8A' }}>{d.day}</p>
                 <div className="flex-1 h-1.5 rounded-full overflow-hidden" style={{ background: '#1C2540' }}>
                   <div
                     className="h-full rounded-full"
-                    style={{
-                      width: `${(d.amount / 2_184_000) * 100}%`,
-                      background: d.amount > 1_500_000 ? '#FF4757' : '#4F7FFF',
-                    }}
+                    style={{ width: `${weekMax > 0 ? (d.amount / weekMax) * 100 : 0}%`, background: d.amount === weekMax ? '#FF4757' : '#4F7FFF' }}
                   />
                 </div>
                 <p className="text-sm font-mono-data w-20 text-right" style={{ color: '#E8EDFF' }}>{formatCOPShort(d.amount)}</p>
@@ -243,95 +237,53 @@ export default function Charts() {
         </div>
       )}
 
-      {/* Net Worth Chart */}
+      {/* Balance trend */}
       {view === 'networth' && (
         <div className="fade-up">
-          <div
-            className="mx-4 mb-4 rounded-2xl p-4"
-            style={{ background: '#0E1420', border: '1px solid rgba(255,255,255,0.06)' }}
-          >
+          <div className="mx-4 mb-6 rounded-2xl p-4" style={card}>
             <div className="flex items-end justify-between mb-4">
               <div>
-                <p className="text-xs" style={{ color: '#5A6A8A' }}>Patrimonio Neto</p>
-                <p className="text-2xl font-bold font-mono-data mt-0.5" style={{ color: '#E8EDFF' }}>{formatCOPShort(netWorthTrend[netWorthTrend.length - 1].value)}</p>
+                <p className="text-xs" style={{ color: '#5A6A8A' }}>Saldo disponible</p>
+                <p className="text-2xl font-bold font-mono-data mt-0.5" style={{ color: balance < 0 ? '#FF4757' : '#E8EDFF' }}>
+                  {balance < 0 ? '-' : ''}{formatCOPShort(balance)}
+                </p>
               </div>
-              <span className="text-xs px-2 py-1 rounded-full font-medium" style={{ background: 'rgba(0,232,122,0.12)', color: '#00E87A' }}>
-                ↑ +{formatCOPShort(netWorthTrend[netWorthTrend.length - 1].value - netWorthTrend[0].value)} (6 meses)
-              </span>
+              {firstWithMoney && trendChange !== 0 && (
+                <Badge good={trendChange >= 0}>
+                  {trendChange >= 0 ? '↑ +' : '↓ -'}{formatCOPShort(trendChange)} (6 meses)
+                </Badge>
+              )}
             </div>
-            <div style={{ height: 200 }}>
-              <ResponsiveContainer width="100%" height="100%">
-                <AreaChart data={netWorthTrend} margin={{ top: 4, right: 4, left: 0, bottom: 0 }}>
-                  <defs>
-                    <linearGradient id="nwGradient" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#00E87A" stopOpacity={0.25} />
-                      <stop offset="95%" stopColor="#00E87A" stopOpacity={0} />
-                    </linearGradient>
-                  </defs>
-                  <CartesianGrid stroke="rgba(255,255,255,0.04)" strokeDasharray="0" vertical={false} />
-                  <XAxis
-                    dataKey="month"
-                    tick={{ fill: '#5A6A8A', fontSize: 11, fontFamily: 'Outfit' }}
-                    axisLine={false}
-                    tickLine={false}
-                  />
-                  <YAxis
-                    width={72}
-                    tick={{ fill: '#5A6A8A', fontSize: 10, fontFamily: 'JetBrains Mono' }}
-                    axisLine={false}
-                    tickLine={false}
-                    tickFormatter={v => formatCOPShort(v)}
-                    domain={['dataMin - 2100000', 'dataMax + 2100000']}
-                  />
-                  <Tooltip content={<AreaTooltip />} cursor={{ stroke: 'rgba(0,232,122,0.3)', strokeWidth: 1 }} />
-                  <Area
-                    type="monotone"
-                    dataKey="value"
-                    stroke="#00E87A"
-                    strokeWidth={2}
-                    fill="url(#nwGradient)"
-                    dot={{ fill: '#00E87A', strokeWidth: 0, r: 3 }}
-                    activeDot={{ fill: '#00E87A', r: 5, strokeWidth: 0 }}
-                  />
-                </AreaChart>
-              </ResponsiveContainer>
-            </div>
-          </div>
-
-          {/* Milestones */}
-          <div
-            className="mx-4 mb-6 rounded-2xl p-4"
-            style={{ background: '#0E1420', border: '1px solid rgba(255,255,255,0.06)' }}
-          >
-            <p className="text-sm font-semibold mb-3" style={{ color: '#E8EDFF' }}>Metas</p>
-            {[
-              { label: 'Fondo de Emergencia (3 meses)', current: 104_370_000, target: 90_720_000, done: true },
-              { label: 'Cuota Inicial Casa', current: 104_370_000, target: 252_000_000, done: false },
-              { label: 'Fondo de Vacaciones', current: 13_440_000, target: 21_000_000, done: false },
-            ].map(m => (
-              <div key={m.label} className="mb-3 last:mb-0">
-                <div className="flex items-center justify-between mb-1.5">
-                  <div className="flex items-center gap-2">
-                    <span style={{ color: m.done ? '#00E87A' : '#5A6A8A' }}>
-                      {m.done ? '✓' : '○'}
-                    </span>
-                    <p className="text-xs" style={{ color: m.done ? '#E8EDFF' : '#5A6A8A' }}>{m.label}</p>
-                  </div>
-                  <p className="text-xs font-mono-data" style={{ color: m.done ? '#00E87A' : '#5A6A8A' }}>
-                    {Math.min(100, Math.round((m.current / m.target) * 100))}%
-                  </p>
-                </div>
-                <div className="h-1 rounded-full overflow-hidden" style={{ background: '#1C2540' }}>
-                  <div
-                    className="h-full rounded-full"
-                    style={{
-                      width: `${Math.min(100, (m.current / m.target) * 100)}%`,
-                      background: m.done ? '#00E87A' : '#4F7FFF',
-                    }}
-                  />
-                </div>
+            {transactions.length === 0 ? (
+              <Empty text="Agrega dinero para ver cómo cambia tu saldo mes a mes" />
+            ) : (
+              <div style={{ height: 200 }}>
+                <ResponsiveContainer width="100%" height="100%">
+                  <AreaChart data={trend} margin={{ top: 4, right: 4, left: 0, bottom: 0 }}>
+                    <defs>
+                      <linearGradient id="nwGradient" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="#00E87A" stopOpacity={0.25} />
+                        <stop offset="95%" stopColor="#00E87A" stopOpacity={0} />
+                      </linearGradient>
+                    </defs>
+                    <CartesianGrid stroke="rgba(255,255,255,0.04)" strokeDasharray="0" vertical={false} />
+                    <XAxis dataKey="month" tick={labelTick} axisLine={false} tickLine={false} />
+                    <YAxis width={72} tick={axisTick} axisLine={false} tickLine={false} tickFormatter={v => (v < 0 ? '-' : '') + formatCOPShort(v)} />
+                    <Tooltip content={<AreaTooltip />} cursor={{ stroke: 'rgba(0,232,122,0.3)', strokeWidth: 1 }} />
+                    <Area
+                      type="monotone"
+                      dataKey="value"
+                      stroke="#00E87A"
+                      strokeWidth={2}
+                      fill="url(#nwGradient)"
+                      dot={{ fill: '#00E87A', strokeWidth: 0, r: 3 }}
+                      activeDot={{ fill: '#00E87A', r: 5, strokeWidth: 0 }}
+                    />
+                  </AreaChart>
+                </ResponsiveContainer>
               </div>
-            ))}
+            )}
+            <p className="text-[10px] mt-2" style={{ color: '#3A4A6A' }}>Saldo al final de cada mes, según tus movimientos</p>
           </div>
         </div>
       )}

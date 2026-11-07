@@ -73,7 +73,7 @@ export default function ProfileSheet({ user, onClose, onDelete }: Props) {
           <div className="rounded-2xl p-4 mb-2" style={{ background: 'rgba(255,71,87,0.08)', border: '1px solid rgba(255,71,87,0.3)' }}>
             <p className="text-sm font-medium mb-1" style={{ color: '#E8EDFF' }}>¿Eliminar tu registro?</p>
             <p className="text-xs mb-4" style={{ color: '#8B9CC4' }}>
-              Se borrarán tus datos de este dispositivo y tendrás que registrarte de nuevo.
+              Se borrarán tus datos y todos tus movimientos de este dispositivo, y tendrás que registrarte de nuevo.
             </p>
             <div className="flex gap-2">
               <button

@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from 'react'
-import { suggestedQuestions, getAIResponse } from '../data/mockData'
+import { answer, suggestedQuestions, welcomeText } from '../lib/assistant'
+import type { Settings, Transaction } from '../lib/finance'
 import { firstNameOf, type UserProfile } from '../lib/user'
 
 interface Message {
@@ -23,17 +24,16 @@ function parseBold(text: string): React.ReactNode[] {
   })
 }
 
-function welcomeMessage(name: string): Message {
-  return {
-    id: 0,
-    role: 'ai',
-    text: `¡Hola, ${name}! Soy tu asistente de MoneyOS. Ya revisé tus gastos de septiembre: vas **$ 5.712.000 por debajo del presupuesto** y quedan 5 días del mes. ¡Muy bien! Pregúntame lo que quieras sobre tus finanzas.`,
-    time: now(),
-  }
+interface Props {
+  user: UserProfile
+  transactions: Transaction[]
+  settings: Settings
 }
 
-export default function AIChat({ user }: { user: UserProfile }) {
-  const [messages, setMessages] = useState<Message[]>(() => [welcomeMessage(firstNameOf(user))])
+export default function AIChat({ user, transactions, settings }: Props) {
+  const [messages, setMessages] = useState<Message[]>(() => [
+    { id: 0, role: 'ai', text: welcomeText(firstNameOf(user), transactions, settings), time: now() },
+  ])
   const [input, setInput] = useState('')
   const [isTyping, setIsTyping] = useState(false)
   const [suggestionsVisible, setSuggestionsVisible] = useState(true)
@@ -59,12 +59,12 @@ export default function AIChat({ user }: { user: UserProfile }) {
     setIsTyping(true)
     setSuggestionsVisible(false)
 
-    const delay = 1200 + Math.random() * 800
+    const delay = 700 + Math.random() * 500
     setTimeout(() => {
       const aiMsg: Message = {
         id: Date.now() + 1,
         role: 'ai',
-        text: getAIResponse(text),
+        text: answer(text, transactions, settings),
         time: now(),
       }
       setMessages(prev => [...prev, aiMsg])
