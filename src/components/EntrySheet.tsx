@@ -34,7 +34,7 @@ export default function EntrySheet({ type: initialType, existing, isFirst, balan
 
   const isIncome = type === 'ingreso'
   const categories = isIncome ? incomeCategories : expenseCategories
-  const accent = isIncome ? '#00E87A' : '#FF4757'
+  const accent = '#F4F4F5'
 
   const amountError = tried && amount <= 0 ? 'Escribe el monto' : undefined
   const categoryError = tried && !categories.some(c => c.name === category) ? (isIncome ? 'Elige de dónde viene la plata' : 'Elige qué tipo de gasto es') : undefined
@@ -68,20 +68,20 @@ export default function EntrySheet({ type: initialType, existing, isFirst, balan
   return (
     <Sheet label={title} onClose={onClose}>
       <div className="flex items-center justify-between mb-4">
-        <p className="text-lg font-semibold" style={{ color: '#E8EDFF' }}>{title}</p>
-        <button onClick={onClose} className="text-sm" style={{ color: '#5A6A8A' }}>Cancelar</button>
+        <p className="text-lg font-semibold" style={{ color: '#F4F4F5' }}>{title}</p>
+        <button onClick={onClose} className="text-sm" style={{ color: '#8C8C93' }}>Cancelar</button>
       </div>
 
       {/* Type switch */}
-      <div className="flex gap-1 p-1 rounded-2xl mb-4" style={{ background: '#0E1420' }}>
+      <div className="flex gap-1 p-1 rounded-2xl mb-4" style={{ background: '#111112' }}>
         {([['gasto', '− Gasto'], ['ingreso', '+ Ingreso']] as const).map(([key, label]) => (
           <button
             key={key}
             onClick={() => switchType(key)}
             className="flex-1 py-2 rounded-xl text-sm font-medium transition-all duration-200"
             style={{
-              background: type === key ? '#141B2D' : 'transparent',
-              color: type === key ? (key === 'ingreso' ? '#00E87A' : '#FF4757') : '#5A6A8A',
+              background: type === key ? '#1A1A1C' : 'transparent',
+              color: type === key ? '#F4F4F5' : '#8C8C93',
               border: type === key ? '1px solid rgba(255,255,255,0.08)' : '1px solid transparent',
             }}
           >
@@ -90,11 +90,11 @@ export default function EntrySheet({ type: initialType, existing, isFirst, balan
         ))}
       </div>
 
-      <p className="text-xs font-medium mb-1.5" style={{ color: '#8B9CC4' }}>
+      <p className="text-xs font-medium mb-1.5" style={{ color: '#A8A8AF' }}>
         {isIncome ? '¿Cuánta plata entra?' : '¿Cuánto gastaste?'}
       </p>
       <AmountField value={amount} onChange={setAmount} color={accent} autoFocus={!existing} error={amountError} />
-      <p className="text-[11px] mt-1.5 mb-4" style={{ color: after < 0 ? '#FF4757' : '#5A6A8A' }}>
+      <p className="text-[11px] mt-1.5 mb-4" style={{ color: after < 0 ? '#E0706B' : '#8C8C93' }}>
         {amount > 0
           ? `Tu saldo quedará en ${after < 0 ? '-' : ''}${formatCOP(after)}`
           : isIncome && isFirst
@@ -102,7 +102,7 @@ export default function EntrySheet({ type: initialType, existing, isFirst, balan
           : `Saldo actual: ${balance < 0 ? '-' : ''}${formatCOP(balance)}`}
       </p>
 
-      <p className="text-xs font-medium mb-2" style={{ color: '#8B9CC4' }}>
+      <p className="text-xs font-medium mb-2" style={{ color: '#A8A8AF' }}>
         {isIncome ? '¿De dónde viene?' : '¿Qué tipo de gasto es?'}
       </p>
       <div className="grid grid-cols-2 gap-2 mb-1">
@@ -115,24 +115,24 @@ export default function EntrySheet({ type: initialType, existing, isFirst, balan
               aria-pressed={active}
               className="flex items-center gap-2 rounded-xl px-3 py-2.5 text-left transition-all duration-150"
               style={{
-                background: active ? `${c.color}1F` : '#0E1420',
-                border: `1px solid ${active ? c.color : categoryError ? 'rgba(255,71,87,0.4)' : 'rgba(255,255,255,0.06)'}`,
+                background: active ? `${c.color}1F` : '#111112',
+                border: `1px solid ${active ? c.color : categoryError ? 'rgba(224,112,107,0.4)' : 'rgba(255,255,255,0.06)'}`,
               }}
             >
-              <span className="text-lg flex-shrink-0">{c.icon}</span>
+              <span className="text-lg flex-shrink-0 mono-icon">{c.icon}</span>
               <span className="min-w-0">
-                <span className="block text-sm font-medium truncate" style={{ color: active ? '#E8EDFF' : '#A8B8D8' }}>{c.name}</span>
-                {c.hint && <span className="block text-[10px] truncate" style={{ color: '#5A6A8A' }}>{c.hint}</span>}
+                <span className="block text-sm font-medium truncate" style={{ color: active ? '#F4F4F5' : '#C9C9CE' }}>{c.name}</span>
+                {c.hint && <span className="block text-[10px] truncate" style={{ color: '#8C8C93' }}>{c.hint}</span>}
               </span>
             </button>
           )
         })}
       </div>
-      {categoryError && <p className="text-xs mt-1" style={{ color: '#FF4757' }}>{categoryError}</p>}
+      {categoryError && <p className="text-xs mt-1" style={{ color: '#E0706B' }}>{categoryError}</p>}
 
       <div className="grid grid-cols-[1fr_auto] gap-2 mt-4 mb-5">
         <label className="block min-w-0">
-          <span className="block text-xs font-medium mb-1.5" style={{ color: '#8B9CC4' }}>Descripción (opcional)</span>
+          <span className="block text-xs font-medium mb-1.5" style={{ color: '#A8A8AF' }}>Descripción (opcional)</span>
           <input
             name="description"
             value={description}
@@ -140,11 +140,11 @@ export default function EntrySheet({ type: initialType, existing, isFirst, balan
             maxLength={60}
             placeholder={isIncome ? 'Ej. Pago quincena' : 'Ej. Almuerzo, Uber, Netflix'}
             className="w-full rounded-xl px-4 py-3 text-base outline-none"
-            style={{ background: '#0E1420', color: '#E8EDFF', border: '1px solid rgba(255,255,255,0.08)', caretColor: '#00E87A' }}
+            style={{ background: '#111112', color: '#F4F4F5', border: '1px solid rgba(255,255,255,0.08)', caretColor: '#F4F4F5' }}
           />
         </label>
         <label className="block">
-          <span className="block text-xs font-medium mb-1.5" style={{ color: '#8B9CC4' }}>Fecha</span>
+          <span className="block text-xs font-medium mb-1.5" style={{ color: '#A8A8AF' }}>Fecha</span>
           <input
             name="date"
             type="date"
@@ -152,7 +152,7 @@ export default function EntrySheet({ type: initialType, existing, isFirst, balan
             max={todayISO()}
             onChange={e => setDate(e.target.value)}
             className="rounded-xl px-3 py-3 text-base outline-none"
-            style={{ background: '#0E1420', color: '#E8EDFF', border: '1px solid rgba(255,255,255,0.08)', colorScheme: 'dark', minHeight: 50, width: 150 }}
+            style={{ background: '#111112', color: '#F4F4F5', border: '1px solid rgba(255,255,255,0.08)', colorScheme: 'dark', minHeight: 50, width: 150 }}
           />
         </label>
       </div>
@@ -160,7 +160,7 @@ export default function EntrySheet({ type: initialType, existing, isFirst, balan
       <button
         onClick={save}
         className="w-full rounded-2xl py-4 text-base font-semibold transition-opacity active:opacity-80"
-        style={{ background: accent, color: '#06090F' }}
+        style={{ background: accent, color: '#050505' }}
       >
         {existing ? 'Guardar cambios' : isIncome ? 'Agregar dinero' : 'Guardar transacción'}
       </button>
@@ -168,15 +168,15 @@ export default function EntrySheet({ type: initialType, existing, isFirst, balan
       {existing && onDelete && (
         confirmDelete ? (
           <div className="flex gap-2 mt-2">
-            <button onClick={() => setConfirmDelete(false)} className="flex-1 rounded-xl py-3 text-sm font-medium" style={{ background: '#141B2D', color: '#E8EDFF' }}>
+            <button onClick={() => setConfirmDelete(false)} className="flex-1 rounded-xl py-3 text-sm font-medium" style={{ background: '#1A1A1C', color: '#F4F4F5' }}>
               No borrar
             </button>
-            <button onClick={() => onDelete(existing.id)} className="flex-1 rounded-xl py-3 text-sm font-semibold" style={{ background: '#FF4757', color: '#06090F' }}>
+            <button onClick={() => onDelete(existing.id)} className="flex-1 rounded-xl py-3 text-sm font-semibold" style={{ background: '#E0706B', color: '#050505' }}>
               Sí, borrar
             </button>
           </div>
         ) : (
-          <button onClick={() => setConfirmDelete(true)} className="w-full rounded-xl py-3 mt-2 text-sm font-medium" style={{ color: '#FF4757' }}>
+          <button onClick={() => setConfirmDelete(true)} className="w-full rounded-xl py-3 mt-2 text-sm font-medium" style={{ color: '#E0706B' }}>
             Borrar movimiento
           </button>
         )

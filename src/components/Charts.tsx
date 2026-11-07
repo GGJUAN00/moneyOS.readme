@@ -18,14 +18,14 @@ import { formatCOP, formatCOPShort, formatPct, monthTitle } from '../lib/format'
 
 type View = 'monthly' | 'weekly' | 'networth'
 
-const card = { background: '#0E1420', border: '1px solid rgba(255,255,255,0.06)' }
+const card = { background: '#111112', border: '1px solid rgba(255,255,255,0.06)' }
 
 function BarTooltip({ active, payload, label }: { active?: boolean; payload?: { value: number }[]; label?: string }) {
   if (!active || !payload?.length) return null
   return (
-    <div style={{ background: '#141B2D', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 10 }} className="px-3 py-2">
-      <p className="text-xs mb-0.5" style={{ color: '#5A6A8A' }}>{label}</p>
-      <p className="text-sm font-semibold font-mono-data" style={{ color: '#E8EDFF' }}>{formatCOP(payload[0].value)}</p>
+    <div style={{ background: '#1A1A1C', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 10 }} className="px-3 py-2">
+      <p className="text-xs mb-0.5" style={{ color: '#8C8C93' }}>{label}</p>
+      <p className="text-sm font-semibold font-mono-data" style={{ color: '#F4F4F5' }}>{formatCOP(payload[0].value)}</p>
     </div>
   )
 }
@@ -34,9 +34,9 @@ function AreaTooltip({ active, payload, label }: { active?: boolean; payload?: {
   if (!active || !payload?.length) return null
   const v = payload[0].value
   return (
-    <div style={{ background: '#141B2D', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 10 }} className="px-3 py-2">
-      <p className="text-xs mb-0.5" style={{ color: '#5A6A8A' }}>{label}</p>
-      <p className="text-sm font-semibold font-mono-data" style={{ color: v < 0 ? '#FF4757' : '#00E87A' }}>{v < 0 ? '-' : ''}{formatCOP(v)}</p>
+    <div style={{ background: '#1A1A1C', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 10 }} className="px-3 py-2">
+      <p className="text-xs mb-0.5" style={{ color: '#8C8C93' }}>{label}</p>
+      <p className="text-sm font-semibold font-mono-data" style={{ color: v < 0 ? '#E0706B' : '#F4F4F5' }}>{v < 0 ? '-' : ''}{formatCOP(v)}</p>
     </div>
   )
 }
@@ -45,7 +45,7 @@ function Badge({ good, children }: { good: boolean; children: React.ReactNode })
   return (
     <span
       className="text-xs px-2 py-1 rounded-full font-medium"
-      style={good ? { background: 'rgba(0,232,122,0.12)', color: '#00E87A' } : { background: 'rgba(255,71,87,0.12)', color: '#FF4757' }}
+      style={good ? { background: 'rgba(255,255,255,0.12)', color: '#F4F4F5' } : { background: 'rgba(224,112,107,0.12)', color: '#E0706B' }}
     >
       {children}
     </span>
@@ -53,11 +53,11 @@ function Badge({ good, children }: { good: boolean; children: React.ReactNode })
 }
 
 function Empty({ text }: { text: string }) {
-  return <p className="text-xs text-center py-10" style={{ color: '#5A6A8A' }}>{text}</p>
+  return <p className="text-xs text-center py-10" style={{ color: '#8C8C93' }}>{text}</p>
 }
 
-const axisTick = { fill: '#5A6A8A', fontSize: 10, fontFamily: 'JetBrains Mono' }
-const labelTick = { fill: '#5A6A8A', fontSize: 11, fontFamily: 'Outfit' }
+const axisTick = { fill: '#8C8C93', fontSize: 10, fontFamily: 'Manrope' }
+const labelTick = { fill: '#8C8C93', fontSize: 11, fontFamily: 'Manrope' }
 
 export default function Charts({ transactions }: { transactions: Transaction[] }) {
   const [view, setView] = useState<View>('monthly')
@@ -90,23 +90,23 @@ export default function Charts({ transactions }: { transactions: Transaction[] }
   ]
 
   return (
-    <div className="h-full overflow-y-auto scrollbar-hide" style={{ background: '#06090F' }}>
+    <div className="h-full overflow-y-auto scrollbar-hide" style={{ background: '#050505' }}>
       {/* Header */}
       <div className="px-6 pt-4 pb-3">
-        <p className="text-xl font-bold" style={{ color: '#E8EDFF' }}>Análisis</p>
-        <p className="text-xs mt-0.5" style={{ color: '#5A6A8A' }}>{monthTitle(now)}</p>
+        <p className="text-xl font-bold" style={{ color: '#F4F4F5' }}>Análisis</p>
+        <p className="text-xs mt-0.5" style={{ color: '#8C8C93' }}>{monthTitle(now)}</p>
       </div>
 
       {/* View Tabs */}
-      <div className="mx-4 mb-4 flex gap-1 p-1 rounded-2xl" style={{ background: '#0E1420' }}>
+      <div className="mx-4 mb-4 flex gap-1 p-1 rounded-2xl" style={{ background: '#111112' }}>
         {views.map(({ key, label }) => (
           <button
             key={key}
             onClick={() => setView(key)}
             className="flex-1 py-2 rounded-xl text-sm font-medium transition-all duration-200"
             style={{
-              background: view === key ? '#141B2D' : 'transparent',
-              color: view === key ? '#E8EDFF' : '#5A6A8A',
+              background: view === key ? '#1A1A1C' : 'transparent',
+              color: view === key ? '#F4F4F5' : '#8C8C93',
               border: view === key ? '1px solid rgba(255,255,255,0.08)' : '1px solid transparent',
             }}
           >
@@ -121,8 +121,8 @@ export default function Charts({ transactions }: { transactions: Transaction[] }
           <div className="mx-4 mb-4 rounded-2xl p-4" style={card}>
             <div className="flex items-end justify-between mb-4">
               <div>
-                <p className="text-xs" style={{ color: '#5A6A8A' }}>Gasto este mes</p>
-                <p className="text-2xl font-bold font-mono-data mt-0.5" style={{ color: '#E8EDFF' }}>{formatCOPShort(thisMonth.spent)}</p>
+                <p className="text-xs" style={{ color: '#8C8C93' }}>Gasto este mes</p>
+                <p className="text-2xl font-bold font-mono-data mt-0.5" style={{ color: '#F4F4F5' }}>{formatCOPShort(thisMonth.spent)}</p>
               </div>
               {vsAvg !== null && (
                 <Badge good={vsAvg <= 0}>{vsAvg <= 0 ? '↓ ' : '↑ '}{formatPct(Math.abs(vsAvg))} vs. promedio</Badge>
@@ -139,7 +139,7 @@ export default function Charts({ transactions }: { transactions: Transaction[] }
                     <Tooltip content={<BarTooltip />} cursor={{ fill: 'rgba(255,255,255,0.03)', radius: 8 }} />
                     <Bar dataKey="spent" radius={[6, 6, 2, 2]} onMouseEnter={(_, i) => setActiveBar(i)} onMouseLeave={() => setActiveBar(null)}>
                       {months.map((_, i) => (
-                        <Cell key={i} fill={i === months.length - 1 || i === activeBar ? '#00E87A' : '#1C2540'} />
+                        <Cell key={i} fill={i === months.length - 1 || i === activeBar ? '#F4F4F5' : '#262629'} />
                       ))}
                     </Bar>
                   </BarChart>
@@ -150,7 +150,7 @@ export default function Charts({ transactions }: { transactions: Transaction[] }
 
           {/* Category Breakdown */}
           <div className="mx-4 mb-6 rounded-2xl p-4" style={card}>
-            <p className="text-sm font-semibold mb-4" style={{ color: '#E8EDFF' }}>Por categoría</p>
+            <p className="text-sm font-semibold mb-4" style={{ color: '#F4F4F5' }}>Por categoría</p>
             {categories.length === 0 ? (
               <Empty text="Aún no hay gastos este mes" />
             ) : (
@@ -161,18 +161,18 @@ export default function Charts({ transactions }: { transactions: Transaction[] }
                     <div key={cat.name}>
                       <div className="flex items-center justify-between mb-1.5">
                         <div className="flex items-center gap-2">
-                          <span className="text-base">{cat.icon}</span>
-                          <span className="text-sm" style={{ color: '#E8EDFF' }}>{cat.name}</span>
+                          <span className="text-base mono-icon">{cat.icon}</span>
+                          <span className="text-sm" style={{ color: '#F4F4F5' }}>{cat.name}</span>
                         </div>
                         <div className="flex items-center gap-2">
-                          <span className="text-xs font-mono-data" style={{ color: '#5A6A8A' }}>{Math.round(pct)}%</span>
-                          <span className="text-sm font-semibold font-mono-data" style={{ color: '#E8EDFF' }}>{formatCOPShort(cat.amount)}</span>
+                          <span className="text-xs font-mono-data" style={{ color: '#8C8C93' }}>{Math.round(pct)}%</span>
+                          <span className="text-sm font-semibold font-mono-data" style={{ color: '#F4F4F5' }}>{formatCOPShort(cat.amount)}</span>
                         </div>
                       </div>
-                      <div className="relative h-1.5 rounded-full overflow-hidden" style={{ background: '#1C2540' }}>
+                      <div className="relative h-1.5 rounded-full overflow-hidden" style={{ background: '#262629' }}>
                         <div className="absolute left-0 top-0 h-full rounded-full" style={{ width: `${pct}%`, background: cat.color, transition: 'width 0.6s ease' }} />
                       </div>
-                      <p className="text-[10px] mt-1" style={{ color: '#3A4A6A' }}>
+                      <p className="text-[10px] mt-1" style={{ color: '#5E5E65' }}>
                         {cat.count} {cat.count === 1 ? 'movimiento' : 'movimientos'}
                       </p>
                     </div>
@@ -190,8 +190,8 @@ export default function Charts({ transactions }: { transactions: Transaction[] }
           <div className="mx-4 mb-4 rounded-2xl p-4" style={card}>
             <div className="flex items-end justify-between mb-4">
               <div>
-                <p className="text-xs" style={{ color: '#5A6A8A' }}>Esta semana</p>
-                <p className="text-2xl font-bold font-mono-data mt-0.5" style={{ color: '#E8EDFF' }}>{formatCOPShort(weekTotal)}</p>
+                <p className="text-xs" style={{ color: '#8C8C93' }}>Esta semana</p>
+                <p className="text-2xl font-bold font-mono-data mt-0.5" style={{ color: '#F4F4F5' }}>{formatCOPShort(weekTotal)}</p>
               </div>
               {vsWeek !== null && (
                 <Badge good={vsWeek <= 0}>{vsWeek <= 0 ? '↓ ' : '↑ '}{formatPct(Math.abs(vsWeek), 0)} vs. semana anterior</Badge>
@@ -208,7 +208,7 @@ export default function Charts({ transactions }: { transactions: Transaction[] }
                     <Tooltip content={<BarTooltip />} cursor={{ fill: 'rgba(255,255,255,0.03)', radius: 8 }} />
                     <Bar dataKey="amount" radius={[6, 6, 2, 2]}>
                       {week.map((d, i) => (
-                        <Cell key={i} fill={d.amount > 0 && d.amount === weekMax ? '#FF4757' : d.isToday ? '#00E87A' : '#1C2540'} />
+                        <Cell key={i} fill={d.isToday ? '#F4F4F5' : d.amount > 0 && d.amount === weekMax ? '#8C8C93' : '#262629'} />
                       ))}
                     </Bar>
                   </BarChart>
@@ -219,18 +219,18 @@ export default function Charts({ transactions }: { transactions: Transaction[] }
 
           <div className="mx-4 mb-6 rounded-2xl overflow-hidden" style={card}>
             <div className="px-4 pt-4 pb-2">
-              <p className="text-sm font-semibold" style={{ color: '#E8EDFF' }}>Día por día</p>
+              <p className="text-sm font-semibold" style={{ color: '#F4F4F5' }}>Día por día</p>
             </div>
             {week.map((d, i) => (
               <div key={d.day} className="flex items-center gap-3 px-4 py-3" style={{ borderTop: i > 0 ? '1px solid rgba(255,255,255,0.04)' : 'none', opacity: d.isFuture ? 0.4 : 1 }}>
-                <p className="text-sm w-8" style={{ color: d.isToday ? '#00E87A' : '#5A6A8A' }}>{d.day}</p>
-                <div className="flex-1 h-1.5 rounded-full overflow-hidden" style={{ background: '#1C2540' }}>
+                <p className="text-sm w-8" style={{ color: d.isToday ? '#F4F4F5' : '#8C8C93' }}>{d.day}</p>
+                <div className="flex-1 h-1.5 rounded-full overflow-hidden" style={{ background: '#262629' }}>
                   <div
                     className="h-full rounded-full"
-                    style={{ width: `${weekMax > 0 ? (d.amount / weekMax) * 100 : 0}%`, background: d.amount === weekMax ? '#FF4757' : '#4F7FFF' }}
+                    style={{ width: `${weekMax > 0 ? (d.amount / weekMax) * 100 : 0}%`, background: d.amount === weekMax ? '#F4F4F5' : '#6E6E75' }}
                   />
                 </div>
-                <p className="text-sm font-mono-data w-20 text-right" style={{ color: '#E8EDFF' }}>{formatCOPShort(d.amount)}</p>
+                <p className="text-sm font-mono-data w-20 text-right" style={{ color: '#F4F4F5' }}>{formatCOPShort(d.amount)}</p>
               </div>
             ))}
           </div>
@@ -243,8 +243,8 @@ export default function Charts({ transactions }: { transactions: Transaction[] }
           <div className="mx-4 mb-6 rounded-2xl p-4" style={card}>
             <div className="flex items-end justify-between mb-4">
               <div>
-                <p className="text-xs" style={{ color: '#5A6A8A' }}>Saldo disponible</p>
-                <p className="text-2xl font-bold font-mono-data mt-0.5" style={{ color: balance < 0 ? '#FF4757' : '#E8EDFF' }}>
+                <p className="text-xs" style={{ color: '#8C8C93' }}>Saldo disponible</p>
+                <p className="text-2xl font-bold font-mono-data mt-0.5" style={{ color: balance < 0 ? '#E0706B' : '#F4F4F5' }}>
                   {balance < 0 ? '-' : ''}{formatCOPShort(balance)}
                 </p>
               </div>
@@ -262,28 +262,28 @@ export default function Charts({ transactions }: { transactions: Transaction[] }
                   <AreaChart data={trend} margin={{ top: 4, right: 4, left: 0, bottom: 0 }}>
                     <defs>
                       <linearGradient id="nwGradient" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="#00E87A" stopOpacity={0.25} />
-                        <stop offset="95%" stopColor="#00E87A" stopOpacity={0} />
+                        <stop offset="5%" stopColor="#F4F4F5" stopOpacity={0.25} />
+                        <stop offset="95%" stopColor="#F4F4F5" stopOpacity={0} />
                       </linearGradient>
                     </defs>
                     <CartesianGrid stroke="rgba(255,255,255,0.04)" strokeDasharray="0" vertical={false} />
                     <XAxis dataKey="month" tick={labelTick} axisLine={false} tickLine={false} />
                     <YAxis width={72} tick={axisTick} axisLine={false} tickLine={false} tickFormatter={v => (v < 0 ? '-' : '') + formatCOPShort(v)} />
-                    <Tooltip content={<AreaTooltip />} cursor={{ stroke: 'rgba(0,232,122,0.3)', strokeWidth: 1 }} />
+                    <Tooltip content={<AreaTooltip />} cursor={{ stroke: 'rgba(255,255,255,0.3)', strokeWidth: 1 }} />
                     <Area
                       type="monotone"
                       dataKey="value"
-                      stroke="#00E87A"
+                      stroke="#F4F4F5"
                       strokeWidth={2}
                       fill="url(#nwGradient)"
-                      dot={{ fill: '#00E87A', strokeWidth: 0, r: 3 }}
-                      activeDot={{ fill: '#00E87A', r: 5, strokeWidth: 0 }}
+                      dot={{ fill: '#F4F4F5', strokeWidth: 0, r: 3 }}
+                      activeDot={{ fill: '#F4F4F5', r: 5, strokeWidth: 0 }}
                     />
                   </AreaChart>
                 </ResponsiveContainer>
               </div>
             )}
-            <p className="text-[10px] mt-2" style={{ color: '#3A4A6A' }}>Saldo al final de cada mes, según tus movimientos</p>
+            <p className="text-[10px] mt-2" style={{ color: '#5E5E65' }}>Saldo al final de cada mes, según tus movimientos</p>
           </div>
         </div>
       )}

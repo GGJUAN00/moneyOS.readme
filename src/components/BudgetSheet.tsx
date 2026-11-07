@@ -12,8 +12,8 @@ export default function BudgetSheet({ current, onSave, onClose }: Props) {
 
   return (
     <Sheet label="Presupuesto mensual" onClose={onClose}>
-      <p className="text-lg font-semibold mb-1" style={{ color: '#E8EDFF' }}>Presupuesto mensual</p>
-      <p className="text-xs mb-4" style={{ color: '#5A6A8A' }}>
+      <p className="text-lg font-semibold mb-1" style={{ color: '#F4F4F5' }}>Presupuesto mensual</p>
+      <p className="text-xs mb-4" style={{ color: '#8C8C93' }}>
         ¿Cuánto quieres gastar como máximo cada mes? Te avisamos cuánto te queda.
       </p>
       <AmountField value={amount} onChange={setAmount} autoFocus />
@@ -22,7 +22,7 @@ export default function BudgetSheet({ current, onSave, onClose }: Props) {
           <button
             onClick={() => onSave(0)}
             className="flex-1 rounded-xl py-3 text-sm font-medium"
-            style={{ color: '#FF4757', border: '1px solid rgba(255,71,87,0.3)' }}
+            style={{ color: '#E0706B', border: '1px solid rgba(224,112,107,0.3)' }}
           >
             Quitar
           </button>
@@ -31,7 +31,7 @@ export default function BudgetSheet({ current, onSave, onClose }: Props) {
           onClick={() => amount > 0 && onSave(amount)}
           disabled={amount <= 0}
           className="flex-[2] rounded-xl py-3 text-sm font-semibold"
-          style={{ background: amount > 0 ? '#00E87A' : '#1C2540', color: amount > 0 ? '#06090F' : '#3A4A6A' }}
+          style={{ background: amount > 0 ? '#F4F4F5' : '#262629', color: amount > 0 ? '#050505' : '#5E5E65' }}
         >
           Guardar presupuesto
         </button>

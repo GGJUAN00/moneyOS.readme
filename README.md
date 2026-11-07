@@ -57,4 +57,12 @@ npm run dev      # servidor local
 npm run build    # compila a dist/
 ```
 
+## Diseño y sonido
+
+- Paleta negro y gris (grafito), con tarjeta de saldo estilo metal y tipografía Manrope.
+- Sonidos suaves tipo campana al agregar dinero, registrar una transacción o borrar un
+  movimiento, generados en el momento con la Web Audio API (sin archivos de audio).
+  Se pueden apagar en el perfil (toca tus iniciales → **Sonidos**). En iPhone no suenan
+  si el celular está en modo silencio.
+
 Tecnologías: React 19, TypeScript, Vite, Tailwind CSS 4 y Recharts.

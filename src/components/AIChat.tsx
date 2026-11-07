@@ -18,7 +18,7 @@ function parseBold(text: string): React.ReactNode[] {
   const parts = text.split(/(\*\*[^*]+\*\*)/g)
   return parts.map((part, i) => {
     if (part.startsWith('**') && part.endsWith('**')) {
-      return <strong key={i} style={{ color: '#E8EDFF', fontWeight: 600 }}>{part.slice(2, -2)}</strong>
+      return <strong key={i} style={{ color: '#F4F4F5', fontWeight: 600 }}>{part.slice(2, -2)}</strong>
     }
     return part
   })
@@ -73,28 +73,28 @@ export default function AIChat({ user, transactions, settings }: Props) {
   }
 
   return (
-    <div className="h-full flex flex-col" style={{ background: '#06090F' }}>
+    <div className="h-full flex flex-col" style={{ background: '#050505' }}>
       {/* Header */}
       <div
         className="flex items-center gap-3 px-5 py-4"
-        style={{ borderBottom: '1px solid rgba(255,255,255,0.06)', background: '#06090F' }}
+        style={{ borderBottom: '1px solid rgba(255,255,255,0.06)', background: '#050505' }}
       >
         <div
           className="relative w-10 h-10 rounded-xl flex items-center justify-center text-xl flex-shrink-0"
-          style={{ background: 'linear-gradient(135deg, #0E2A1A, #141B2D)', border: '1px solid rgba(0,232,122,0.3)' }}
+          style={{ background: 'linear-gradient(135deg, #1F1F22, #1A1A1C)', border: '1px solid rgba(255,255,255,0.3)' }}
         >
           ✦
           <span
             className="absolute -top-0.5 -right-0.5 w-3 h-3 rounded-full border-2"
-            style={{ background: '#00E87A', borderColor: '#06090F' }}
+            style={{ background: '#F4F4F5', borderColor: '#050505' }}
           />
         </div>
         <div>
-          <p className="text-sm font-semibold" style={{ color: '#E8EDFF' }}>Asistente MoneyOS</p>
-          <p className="text-xs" style={{ color: '#00E87A' }}>En línea · analizando tus datos</p>
+          <p className="text-sm font-semibold" style={{ color: '#F4F4F5' }}>Asistente MoneyOS</p>
+          <p className="text-xs" style={{ color: '#F4F4F5' }}>En línea · analizando tus datos</p>
         </div>
         <div className="ml-auto flex items-center gap-1.5">
-          <span className="text-xs px-2 py-1 rounded-full" style={{ background: '#141B2D', color: '#5A6A8A' }}>
+          <span className="text-xs px-2 py-1 rounded-full" style={{ background: '#1A1A1C', color: '#8C8C93' }}>
             Beta
           </span>
         </div>
@@ -110,7 +110,7 @@ export default function AIChat({ user, transactions, settings }: Props) {
             {msg.role === 'ai' && (
               <div
                 className="w-7 h-7 rounded-lg flex items-center justify-center text-xs mr-2 flex-shrink-0 mt-0.5"
-                style={{ background: '#141B2D', border: '1px solid rgba(0,232,122,0.2)', color: '#00E87A' }}
+                style={{ background: '#1A1A1C', border: '1px solid rgba(255,255,255,0.2)', color: '#F4F4F5' }}
               >
                 ✦
               </div>
@@ -120,14 +120,14 @@ export default function AIChat({ user, transactions, settings }: Props) {
                 className="rounded-2xl px-4 py-3 text-sm leading-relaxed"
                 style={msg.role === 'user'
                   ? {
-                      background: '#141B2D',
-                      color: '#E8EDFF',
+                      background: '#1A1A1C',
+                      color: '#F4F4F5',
                       borderBottomRightRadius: 6,
                       border: '1px solid rgba(255,255,255,0.08)',
                     }
                   : {
-                      background: '#0E1420',
-                      color: '#A8B8D8',
+                      background: '#111112',
+                      color: '#C9C9CE',
                       borderBottomLeftRadius: 6,
                       border: '1px solid rgba(255,255,255,0.06)',
                     }
@@ -135,7 +135,7 @@ export default function AIChat({ user, transactions, settings }: Props) {
               >
                 {msg.role === 'ai' ? parseBold(msg.text) : msg.text}
               </div>
-              <p className="text-[10px] mt-1 px-1" style={{ color: '#3A4A6A' }}>{msg.time}</p>
+              <p className="text-[10px] mt-1 px-1" style={{ color: '#5E5E65' }}>{msg.time}</p>
             </div>
           </div>
         ))}
@@ -145,17 +145,17 @@ export default function AIChat({ user, transactions, settings }: Props) {
           <div className="flex items-center gap-2 fade-up">
             <div
               className="w-7 h-7 rounded-lg flex items-center justify-center text-xs flex-shrink-0"
-              style={{ background: '#141B2D', border: '1px solid rgba(0,232,122,0.2)', color: '#00E87A' }}
+              style={{ background: '#1A1A1C', border: '1px solid rgba(255,255,255,0.2)', color: '#F4F4F5' }}
             >
               ✦
             </div>
             <div
               className="rounded-2xl px-4 py-3 flex items-center gap-1.5"
-              style={{ background: '#0E1420', border: '1px solid rgba(255,255,255,0.06)', borderBottomLeftRadius: 6 }}
+              style={{ background: '#111112', border: '1px solid rgba(255,255,255,0.06)', borderBottomLeftRadius: 6 }}
             >
-              <span className="typing-dot w-1.5 h-1.5 rounded-full" style={{ background: '#5A6A8A' }} />
-              <span className="typing-dot w-1.5 h-1.5 rounded-full" style={{ background: '#5A6A8A' }} />
-              <span className="typing-dot w-1.5 h-1.5 rounded-full" style={{ background: '#5A6A8A' }} />
+              <span className="typing-dot w-1.5 h-1.5 rounded-full" style={{ background: '#8C8C93' }} />
+              <span className="typing-dot w-1.5 h-1.5 rounded-full" style={{ background: '#8C8C93' }} />
+              <span className="typing-dot w-1.5 h-1.5 rounded-full" style={{ background: '#8C8C93' }} />
             </div>
           </div>
         )}
@@ -163,7 +163,7 @@ export default function AIChat({ user, transactions, settings }: Props) {
         {/* Suggested questions */}
         {suggestionsVisible && (
           <div className="fade-up">
-            <p className="text-xs mb-2 ml-9" style={{ color: '#3A4A6A' }}>Sugerencias</p>
+            <p className="text-xs mb-2 ml-9" style={{ color: '#5E5E65' }}>Sugerencias</p>
             <div className="flex flex-wrap gap-2 ml-9">
               {suggestedQuestions.map(q => (
                 <button
@@ -171,8 +171,8 @@ export default function AIChat({ user, transactions, settings }: Props) {
                   onClick={() => sendMessage(q)}
                   className="text-xs px-3 py-2 rounded-xl text-left transition-all duration-150 hover:border-accent/30"
                   style={{
-                    background: '#0E1420',
-                    color: '#8B9CC4',
+                    background: '#111112',
+                    color: '#A8A8AF',
                     border: '1px solid rgba(255,255,255,0.07)',
                   }}
                 >
@@ -189,11 +189,11 @@ export default function AIChat({ user, transactions, settings }: Props) {
       {/* Input */}
       <div
         className="px-4 py-3"
-        style={{ borderTop: '1px solid rgba(255,255,255,0.06)', background: '#06090F' }}
+        style={{ borderTop: '1px solid rgba(255,255,255,0.06)', background: '#050505' }}
       >
         <div
           className="flex items-center gap-2 rounded-2xl px-4 py-2.5"
-          style={{ background: '#0E1420', border: '1px solid rgba(255,255,255,0.08)' }}
+          style={{ background: '#111112', border: '1px solid rgba(255,255,255,0.08)' }}
         >
           {/* 16px font prevents iOS Safari from zooming into the field on focus */}
           <input
@@ -205,8 +205,8 @@ export default function AIChat({ user, transactions, settings }: Props) {
             placeholder="Pregunta sobre tus finanzas…"
             className="flex-1 bg-transparent text-base outline-none placeholder:text-sm"
             style={{
-              color: '#E8EDFF',
-              caretColor: '#00E87A',
+              color: '#F4F4F5',
+              caretColor: '#F4F4F5',
             }}
           />
           <button
@@ -214,8 +214,8 @@ export default function AIChat({ user, transactions, settings }: Props) {
             disabled={!input.trim() || isTyping}
             className="w-8 h-8 rounded-xl flex items-center justify-center transition-all duration-150 flex-shrink-0"
             style={{
-              background: input.trim() && !isTyping ? '#00E87A' : '#1C2540',
-              color: input.trim() && !isTyping ? '#06090F' : '#3A4A6A',
+              background: input.trim() && !isTyping ? '#F4F4F5' : '#262629',
+              color: input.trim() && !isTyping ? '#050505' : '#5E5E65',
             }}
           >
             <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
@@ -223,7 +223,7 @@ export default function AIChat({ user, transactions, settings }: Props) {
             </svg>
           </button>
         </div>
-        <p className="text-center text-[10px] mt-2" style={{ color: '#2A3550' }}>
+        <p className="text-center text-[10px] mt-2" style={{ color: '#3C3C41' }}>
           Las respuestas son solo orientativas, no son asesoría financiera
         </p>
       </div>

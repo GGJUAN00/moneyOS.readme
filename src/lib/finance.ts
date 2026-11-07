@@ -16,7 +16,10 @@ export interface Transaction {
 
 export interface Settings {
   monthlyBudget: number // 0 = not set
+  sound: boolean // interface sounds on transactions
 }
+
+export const defaultSettings: Settings = { monthlyBudget: 0, sound: true }
 
 export interface Category {
   name: string
@@ -26,28 +29,28 @@ export interface Category {
 }
 
 export const expenseCategories: Category[] = [
-  { name: 'Comida', icon: '🍜', color: '#00E87A', hint: 'Mercado, restaurantes, domicilios' },
-  { name: 'Transporte', icon: '🚇', color: '#4F7FFF', hint: 'TransMilenio, Uber, gasolina' },
-  { name: 'Compras', icon: '🛍️', color: '#FF4757', hint: 'Ropa, tecnología, tiendas' },
-  { name: 'Facturas', icon: '⚡', color: '#9B59B6', hint: 'Servicios, arriendo, suscripciones' },
-  { name: 'Entretenimiento', icon: '🎬', color: '#FFB800', hint: 'Cine, salidas, juegos' },
-  { name: 'Salud', icon: '💊', color: '#2EC4B6', hint: 'Droguería, citas, EPS' },
-  { name: 'Educación', icon: '📚', color: '#FF8A3D', hint: 'Matrícula, cursos, libros' },
-  { name: 'Hogar', icon: '🏠', color: '#E056FD', hint: 'Aseo, muebles, arreglos' },
-  { name: 'Envíos', icon: '💸', color: '#7F8FA6', hint: 'Plata que le mandas a alguien' },
-  { name: 'Otros', icon: '📦', color: '#5A6A8A' },
+  { name: 'Comida', icon: '🍜', color: '#F4F4F5', hint: 'Mercado, restaurantes, domicilios' },
+  { name: 'Transporte', icon: '🚇', color: '#CFCFD4', hint: 'TransMilenio, Uber, gasolina' },
+  { name: 'Compras', icon: '🛍️', color: '#ABABB1', hint: 'Ropa, tecnología, tiendas' },
+  { name: 'Facturas', icon: '⚡', color: '#8E8E95', hint: 'Servicios, arriendo, suscripciones' },
+  { name: 'Entretenimiento', icon: '🎬', color: '#C8C1B4', hint: 'Cine, salidas, juegos' },
+  { name: 'Salud', icon: '💊', color: '#9AA3AD', hint: 'Droguería, citas, EPS' },
+  { name: 'Educación', icon: '📚', color: '#727279', hint: 'Matrícula, cursos, libros' },
+  { name: 'Hogar', icon: '🏠', color: '#B9B2A6', hint: 'Aseo, muebles, arreglos' },
+  { name: 'Envíos', icon: '💸', color: '#5F6670', hint: 'Plata que le mandas a alguien' },
+  { name: 'Otros', icon: '📦', color: '#4A4A50' },
 ]
 
 export const incomeCategories: Category[] = [
-  { name: 'Saldo inicial', icon: '🏦', color: '#00E87A', hint: 'Lo que ya tienes en Nequi' },
-  { name: 'Salario', icon: '💼', color: '#00E87A' },
-  { name: 'Me enviaron', icon: '📲', color: '#00E87A' },
-  { name: 'Otro ingreso', icon: '✨', color: '#00E87A' },
+  { name: 'Saldo inicial', icon: '🏦', color: '#F4F4F5', hint: 'Lo que ya tienes en Nequi' },
+  { name: 'Salario', icon: '💼', color: '#F4F4F5' },
+  { name: 'Me enviaron', icon: '📲', color: '#F4F4F5' },
+  { name: 'Otro ingreso', icon: '✨', color: '#F4F4F5' },
 ]
 
 export function categoryInfo(name: string, type?: TxType): Category {
   const list = type === 'ingreso' ? incomeCategories : type === 'gasto' ? expenseCategories : [...expenseCategories, ...incomeCategories]
-  return list.find(c => c.name === name) ?? { name, icon: type === 'ingreso' ? '✨' : '📦', color: '#5A6A8A' }
+  return list.find(c => c.name === name) ?? { name, icon: type === 'ingreso' ? '✨' : '📦', color: '#8C8C93' }
 }
 
 // ---- Storage ----
@@ -78,9 +81,12 @@ export function loadSettings(): Settings {
   try {
     const raw = localStorage.getItem(SETTINGS_KEY)
     const s = raw ? (JSON.parse(raw) as Partial<Settings>) : {}
-    return { monthlyBudget: Number(s.monthlyBudget) > 0 ? Number(s.monthlyBudget) : 0 }
+    return {
+      monthlyBudget: Number(s.monthlyBudget) > 0 ? Number(s.monthlyBudget) : 0,
+      sound: s.sound !== false,
+    }
   } catch {
-    return { monthlyBudget: 0 }
+    return { ...defaultSettings }
   }
 }
 

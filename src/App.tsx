@@ -8,9 +8,11 @@ import ProfileSheet from './components/ProfileSheet'
 import EntrySheet from './components/EntrySheet'
 import BudgetSheet from './components/BudgetSheet'
 import { clearUser, loadUser, type UserProfile } from './lib/user'
+import { playDelete, playExpense, playIncome, playTap, setSoundEnabled } from './lib/sound'
 import {
   balanceOf,
   clearFinanceData,
+  defaultSettings,
   loadSettings,
   loadTransactions,
   saveSettings,
@@ -88,7 +90,11 @@ export default function App() {
   const [user, setUser] = useState<UserProfile | null>(() => loadUser())
   const [profileOpen, setProfileOpen] = useState(false)
   const [transactions, setTransactions] = useState<Transaction[]>(() => loadTransactions())
-  const [settings, setSettings] = useState<Settings>(() => loadSettings())
+  const [settings, setSettings] = useState<Settings>(() => {
+    const s = loadSettings()
+    setSoundEnabled(s.sound)
+    return s
+  })
   // Open entry sheet: a new movement of some type, or an existing one to edit
   const [entry, setEntry] = useState<{ type: TxType; existing?: Transaction } | null>(null)
   const [budgetOpen, setBudgetOpen] = useState(false)
@@ -101,11 +107,14 @@ export default function App() {
   function handleSaveEntry(tx: Transaction) {
     const exists = transactions.some(t => t.id === tx.id)
     updateTransactions(exists ? transactions.map(t => (t.id === tx.id ? tx : t)) : [...transactions, tx])
+    if (tx.type === 'ingreso') playIncome()
+    else playExpense()
     setEntry(null)
   }
 
   function handleDeleteEntry(id: string) {
     updateTransactions(transactions.filter(t => t.id !== id))
+    playDelete()
     setEntry(null)
   }
 
@@ -116,47 +125,62 @@ export default function App() {
     setBudgetOpen(false)
   }
 
+  function handleToggleSound(on: boolean) {
+    const next = { ...settings, sound: on }
+    setSettings(next)
+    saveSettings(next)
+    setSoundEnabled(on)
+    if (on) playIncome() // preview
+  }
+
   function handleDeleteUser() {
     clearUser()
     clearFinanceData()
     setTransactions([])
-    setSettings({ monthlyBudget: 0 })
+    setSettings({ ...defaultSettings })
+    setSoundEnabled(true)
     setProfileOpen(false)
     setTab('home')
     setUser(null)
   }
 
-  const openAdd = (type: TxType) => setEntry({ type })
-  const openEdit = (tx: Transaction) => setEntry({ type: tx.type, existing: tx })
+  const openAdd = (type: TxType) => {
+    playTap()
+    setEntry({ type })
+  }
+  const openEdit = (tx: Transaction) => {
+    playTap()
+    setEntry({ type: tx.type, existing: tx })
+  }
 
   return (
     <div
       className="app-stage w-full flex items-center justify-center"
-      style={{ background: '#02040A' }}
+      style={{ background: '#000000' }}
     >
       {/* Phone shell: framed mockup on desktop, full-screen app on a real phone (see index.css) */}
       <div className="phone-shell relative flex flex-col overflow-hidden">
         {/* Mock status bar — only shown in the desktop mockup; a real phone shows its own */}
         <div className="mock-chrome flex items-center justify-between px-7 pt-3 pb-1 flex-shrink-0">
-          <span className="text-xs font-semibold font-mono-data" style={{ color: '#E8EDFF' }}>9:41</span>
+          <span className="text-xs font-semibold font-mono-data" style={{ color: '#F4F4F5' }}>9:41</span>
           <div className="flex items-center gap-1.5">
             {/* Signal */}
             <div className="flex items-end gap-0.5">
               {[3, 5, 7, 9].map((h, i) => (
-                <div key={i} className="w-1 rounded-sm" style={{ height: h, background: i < 3 ? '#E8EDFF' : '#2A3550' }} />
+                <div key={i} className="w-1 rounded-sm" style={{ height: h, background: i < 3 ? '#F4F4F5' : '#3C3C41' }} />
               ))}
             </div>
             {/* Wifi */}
             <svg width="15" height="12" viewBox="0 0 15 12" fill="none">
-              <path d="M7.5 10.5h.01M4.5 7.5c.83-.83 1.97-1.34 3.22-1.34s2.39.51 3.22 1.34" stroke="#E8EDFF" strokeWidth="1.4" strokeLinecap="round" />
-              <path d="M1.5 4.5C3.17 2.83 5.22 2 7.5 2s4.33.83 6 2.5" stroke="#E8EDFF" strokeWidth="1.4" strokeLinecap="round" />
+              <path d="M7.5 10.5h.01M4.5 7.5c.83-.83 1.97-1.34 3.22-1.34s2.39.51 3.22 1.34" stroke="#F4F4F5" strokeWidth="1.4" strokeLinecap="round" />
+              <path d="M1.5 4.5C3.17 2.83 5.22 2 7.5 2s4.33.83 6 2.5" stroke="#F4F4F5" strokeWidth="1.4" strokeLinecap="round" />
             </svg>
             {/* Battery */}
             <div className="flex items-center gap-0.5">
-              <div className="relative rounded-sm overflow-hidden" style={{ width: 22, height: 11, border: '1.5px solid #E8EDFF' }}>
-                <div className="absolute left-0 top-0 h-full rounded-sm" style={{ width: '72%', background: '#E8EDFF' }} />
+              <div className="relative rounded-sm overflow-hidden" style={{ width: 22, height: 11, border: '1.5px solid #F4F4F5' }}>
+                <div className="absolute left-0 top-0 h-full rounded-sm" style={{ width: '72%', background: '#F4F4F5' }} />
               </div>
-              <div className="rounded-sm" style={{ width: 2, height: 5, background: '#E8EDFF', opacity: 0.6 }} />
+              <div className="rounded-sm" style={{ width: 2, height: 5, background: '#F4F4F5', opacity: 0.6 }} />
             </div>
           </div>
         </div>
@@ -164,7 +188,7 @@ export default function App() {
         {/* Notch */}
         <div
           className="mock-chrome absolute left-1/2 -translate-x-1/2 rounded-b-2xl"
-          style={{ top: 0, width: 120, height: 34, background: '#06090F', zIndex: 10 }}
+          style={{ top: 0, width: 120, height: 34, background: '#050505', zIndex: 10 }}
         />
 
         {/* First launch on this device: registration instead of the app */}
@@ -213,7 +237,13 @@ export default function App() {
         )}
 
         {user && profileOpen && (
-          <ProfileSheet user={user} onClose={() => setProfileOpen(false)} onDelete={handleDeleteUser} />
+          <ProfileSheet
+            user={user}
+            soundOn={settings.sound}
+            onToggleSound={handleToggleSound}
+            onClose={() => setProfileOpen(false)}
+            onDelete={handleDeleteUser}
+          />
         )}
 
         {/* Bottom navigation */}
@@ -222,7 +252,7 @@ export default function App() {
           className="flex items-stretch flex-shrink-0"
           style={{
             borderTop: '1px solid rgba(255,255,255,0.06)',
-            background: '#06090F',
+            background: '#050505',
             paddingBottom: 'env(safe-area-inset-bottom, 8px)',
           }}
         >
@@ -233,20 +263,20 @@ export default function App() {
                 key={key}
                 onClick={() => setTab(key)}
                 className="flex-1 flex flex-col items-center gap-1 py-3 transition-all duration-200"
-                style={{ color: active ? '#00E87A' : '#3A4A6A' }}
+                style={{ color: active ? '#F4F4F5' : '#5E5E65' }}
               >
                 <div className="relative">
                   <Icon active={active} />
                   {active && (
                     <div
                       className="absolute -bottom-1.5 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full"
-                      style={{ background: '#00E87A' }}
+                      style={{ background: '#F4F4F5' }}
                     />
                   )}
                 </div>
                 <span
                   className="text-[10px] font-medium"
-                  style={{ color: active ? '#00E87A' : '#3A4A6A' }}
+                  style={{ color: active ? '#F4F4F5' : '#5E5E65' }}
                 >
                   {label}
                 </span>
