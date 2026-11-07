@@ -1,7 +1,7 @@
 // MoneyOS service worker: keeps the app usable offline.
 // Pages: network first, falling back to the cached copy.
 // Assets and fonts: served from cache, refreshed in the background.
-const CACHE = 'moneyos-v4'
+const CACHE = 'moneyos-v5'
 const SCOPE = self.registration.scope
 
 self.addEventListener('install', (event) => {
