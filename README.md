@@ -25,10 +25,9 @@ Tiene que ser Safari; desde Chrome en iPhone no aparece esa opción.
 
 ## Publicación
 
-Cada vez que se sube un cambio a la rama `main`, GitHub Actions compila la app y la publica en
-GitHub Pages (`.github/workflows/deploy.yml`).
-
-La primera vez hay que activarlo una sola vez en GitHub: **Settings → Pages → Source: GitHub Actions**.
+Cada vez que se sube un cambio a la rama `main`, GitHub Actions compila la app y deja el
+resultado en la rama `gh-pages`, desde donde GitHub Pages la publica
+(`.github/workflows/deploy.yml`). No hace falta configurar nada más.
 
 ## Desarrollo
 
